@@ -19,6 +19,7 @@ public class AccountAssetStore extends TronStoreWithRevoking<AccountAssetCapsule
 
   @Override
   public AccountAssetCapsule get(byte[] key) {
+    String s = "aaddbbcc";
     byte[] value = revokingDB.getUnchecked(key);
     return ArrayUtils.isEmpty(value) ? null : new AccountAssetCapsule(value);
   }
