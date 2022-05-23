@@ -2,13 +2,12 @@ package org.tron.core.db2.core;
 
 import com.google.common.collect.Maps;
 import com.google.common.collect.Streams;
+import com.google.common.primitives.Longs;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
-
-import com.google.common.primitives.Longs;
 import lombok.Getter;
 import org.tron.core.ChainBaseManager;
 import org.tron.core.capsule.AccountCapsule;
@@ -56,7 +55,7 @@ public class SnapshotRoot extends AbstractSnapshot<byte[], byte[]> {
       AccountAssetStore store = ChainBaseManager.getInstance().getAccountAssetStore();
       byte[] vale = get(key);
       if (vale.length > 0) {
-        AccountCapsule item = new AccountCapsule(get(key));
+        AccountCapsule item = new AccountCapsule(vale);
         item.getAssetMapV2().forEach((k, v) ->
                 store.put(item, k.getBytes(), Longs.toByteArray(0)));
       }

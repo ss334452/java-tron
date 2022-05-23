@@ -1,6 +1,5 @@
 package org.tron.core.store;
 
-import com.google.common.primitives.Longs;
 import com.google.protobuf.ByteString;
 import com.typesafe.config.ConfigObject;
 import lombok.extern.slf4j.Slf4j;
@@ -12,7 +11,6 @@ import org.tron.common.parameter.CommonParameter;
 import org.tron.common.utils.Commons;
 import org.tron.core.capsule.AccountCapsule;
 import org.tron.core.capsule.BlockCapsule;
-import org.tron.core.capsule.utils.AssetUtil;
 import org.tron.core.db.TronStoreWithRevoking;
 import org.tron.core.db.accountstate.AccountStateCallBackUtils;
 import org.tron.protos.contract.BalanceContract.TransactionBalanceTrace;
@@ -37,9 +35,6 @@ public class AccountStore extends TronStoreWithRevoking<AccountCapsule> {
 
   @Autowired
   private AccountTraceStore accountTraceStore;
-
-  @Autowired
-  private AccountAssetStore accountAssetStore;
 
   @Autowired
   private DynamicPropertiesStore dynamicPropertiesStore;
@@ -103,10 +98,6 @@ public class AccountStore extends TronStoreWithRevoking<AccountCapsule> {
       }
     }
     super.delete(key);
-
-    if (AssetUtil.isAllowAssetOptimization()) {
-      accountAssetStore.delete(key);
-    }
   }
 
   /**
