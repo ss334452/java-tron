@@ -134,33 +134,6 @@ public class NodeManager implements EventHandler {
   }
 
   private void dbWrite() {
-    try {
-      List<DBNodeStats> batch = new ArrayList<>();
-      DBNode dbNode = new DBNode();
-      for (NodeHandler nodeHandler : nodeHandlerMap.values()) {
-        Node node = nodeHandler.getNode();
-        if (node.isConnectible(Args.getInstance().getNodeP2pVersion())) {
-          DBNodeStats nodeStatic = new DBNodeStats(node.getId(), node.getHost(),
-              node.getPort(), nodeHandler.getNodeStatistics().getReputation());
-          batch.add(nodeStatic);
-        }
-      }
-      int size = batch.size();
-      batch.sort(Comparator.comparingInt(value -> -value.getReputation()));
-      if (batch.size() > MAX_NODES_WRITE_TO_DB) {
-        batch = batch.subList(0, MAX_NODES_WRITE_TO_DB);
-      }
-
-      dbNode.setNodes(batch);
-
-      logger.info("Write node statistics to store: m:{}/t:{}/{}/{} nodes.",
-          nodeHandlerMap.size(), getTable().getAllNodes().size(), size, batch.size());
-
-      chainBaseManager.getCommonStore()
-          .put(DB_KEY_PEERS, new BytesCapsule(JsonUtil.obj2Json(dbNode).getBytes()));
-    } catch (Exception e) {
-      logger.error("DB write node failed.", e);
-    }
   }
 
   public void setMessageSender(Consumer<UdpEvent> messageSender) {
