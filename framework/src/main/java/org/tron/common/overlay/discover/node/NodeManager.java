@@ -66,6 +66,7 @@ public class NodeManager implements EventHandler {
 
   private ScheduledExecutorService pongTimer;
 
+  @Autowired
   public NodeManager(ChainBaseManager chainBaseManager) {
     this.chainBaseManager = chainBaseManager;
     discoveryEnabled = commonParameter.isNodeDiscoveryEnable();
