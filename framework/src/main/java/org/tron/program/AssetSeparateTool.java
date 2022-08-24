@@ -16,7 +16,6 @@ public class AssetSeparateTool {
     long[] cnt = {0};
     long time = System.currentTimeMillis();
     accountStore.forEach(k -> {
-      cnt[0]++;
       accountStore.put(k.getKey(), k.getValue());
       if (++cnt[0] % 100000 == 0) {
         logger.info("### cnt: {}, cost: {}", cnt[0],
