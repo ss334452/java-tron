@@ -1,10 +1,12 @@
 package org.tron.core.vm.repository;
 
+import org.apache.commons.lang3.tuple.Pair;
 import org.tron.common.runtime.vm.DataWord;
 import org.tron.core.capsule.*;
 import org.tron.core.store.*;
 import org.tron.core.vm.program.Storage;
 import org.tron.protos.Protocol;
+import org.tron.protos.contract.Common;
 
 public interface Repository {
 
@@ -106,6 +108,12 @@ public interface Repository {
 
   long getAccountLeftEnergyFromFreeze(AccountCapsule accountCapsule);
 
+  long getAccountEnergyUsageFromFreeze(AccountCapsule accountCapsule);
+
+  Pair<Long, Long> getAccountEnergyUsageBalanceAndRestoreSeconds(AccountCapsule accountCapsule);
+
+  Pair<Long, Long> getAccountNetUsageBalanceAndRestoreSeconds(AccountCapsule accountCapsule);
+
   long calculateGlobalEnergyLimit(AccountCapsule accountCapsule);
 
   byte[] getBlackHoleAddress();
@@ -120,12 +128,22 @@ public interface Repository {
 
   void addTotalEnergyWeight(long amount);
 
+  void addTotalTronPowerWeight(long amount);
+
   void saveTotalNetWeight(long totalNetWeight);
 
   void saveTotalEnergyWeight(long totalEnergyWeight);
 
+  void saveTotalTronPowerWeight(long totalTronPowerWeight);
+
   long getTotalNetWeight();
 
   long getTotalEnergyWeight();
+
+  long getTotalTronPowerWeight();
+
+  long getHeadSlot();
+
+  long getSlotByTimestampMs(long timestamp);
 
 }

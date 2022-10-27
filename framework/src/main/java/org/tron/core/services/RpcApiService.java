@@ -141,13 +141,17 @@ import org.tron.protos.contract.AssetIssueContractOuterClass.ParticipateAssetIss
 import org.tron.protos.contract.AssetIssueContractOuterClass.TransferAssetContract;
 import org.tron.protos.contract.AssetIssueContractOuterClass.UnfreezeAssetContract;
 import org.tron.protos.contract.AssetIssueContractOuterClass.UpdateAssetContract;
+import org.tron.protos.contract.BalanceContract;
 import org.tron.protos.contract.BalanceContract.AccountBalanceRequest;
 import org.tron.protos.contract.BalanceContract.AccountBalanceResponse;
 import org.tron.protos.contract.BalanceContract.BlockBalanceTrace;
+import org.tron.protos.contract.BalanceContract.DelegateResourceContract;
 import org.tron.protos.contract.BalanceContract.FreezeBalanceContract;
 import org.tron.protos.contract.BalanceContract.TransferContract;
+import org.tron.protos.contract.BalanceContract.UnDelegateResourceContract;
 import org.tron.protos.contract.BalanceContract.UnfreezeBalanceContract;
 import org.tron.protos.contract.BalanceContract.WithdrawBalanceContract;
+import org.tron.protos.contract.BalanceContract.WithdrawExpireUnfreezeContract;
 import org.tron.protos.contract.ExchangeContract.ExchangeCreateContract;
 import org.tron.protos.contract.ExchangeContract.ExchangeInjectContract;
 import org.tron.protos.contract.ExchangeContract.ExchangeTransactionContract;
@@ -1478,6 +1482,12 @@ public class RpcApiService implements Service {
     }
 
     @Override
+    public void freezeBalanceV2(BalanceContract.FreezeBalanceV2Contract request,
+                                StreamObserver<TransactionExtention> responseObserver) {
+      createTransactionExtention(request, ContractType.FreezeBalanceV2Contract, responseObserver);
+    }
+
+    @Override
     public void unfreezeBalance(UnfreezeBalanceContract request,
         StreamObserver<Transaction> responseObserver) {
       try {
@@ -1499,6 +1509,12 @@ public class RpcApiService implements Service {
     }
 
     @Override
+    public void unfreezeBalanceV2(BalanceContract.UnfreezeBalanceV2Contract request,
+                                  StreamObserver<TransactionExtention> responseObserver) {
+      createTransactionExtention(request, ContractType.UnfreezeBalanceV2Contract, responseObserver);
+    }
+
+    @Override
     public void withdrawBalance(WithdrawBalanceContract request,
         StreamObserver<Transaction> responseObserver) {
       try {
@@ -1517,6 +1533,27 @@ public class RpcApiService implements Service {
     public void withdrawBalance2(WithdrawBalanceContract request,
         StreamObserver<TransactionExtention> responseObserver) {
       createTransactionExtention(request, ContractType.WithdrawBalanceContract, responseObserver);
+    }
+
+    @Override
+    public void withdrawExpireUnfreeze(WithdrawExpireUnfreezeContract request,
+                                       StreamObserver<TransactionExtention> responseObserver) {
+      createTransactionExtention(request, ContractType.WithdrawExpireUnfreezeContract,
+              responseObserver);
+    }
+
+    @Override
+    public void delegateResource(DelegateResourceContract request,
+                                 StreamObserver<TransactionExtention> responseObserver) {
+      createTransactionExtention(request, ContractType.DelegateResourceContract,
+          responseObserver);
+    }
+
+    @Override
+    public void unDelegateResource(UnDelegateResourceContract request,
+                                       StreamObserver<TransactionExtention> responseObserver) {
+      createTransactionExtention(request, ContractType.UnDelegateResourceContract,
+          responseObserver);
     }
 
     @Override
@@ -1844,7 +1881,7 @@ public class RpcApiService implements Service {
 
     @Override
     public void deployContract(CreateSmartContract request,
-        io.grpc.stub.StreamObserver<TransactionExtention> responseObserver) {
+        StreamObserver<TransactionExtention> responseObserver) {
       createTransactionExtention(request, ContractType.CreateSmartContract, responseObserver);
     }
 
@@ -2493,7 +2530,7 @@ public class RpcApiService implements Service {
     @Override
     public void getTriggerInputForShieldedTRC20Contract(
         ShieldedTRC20TriggerContractParameters request,
-        io.grpc.stub.StreamObserver<org.tron.api.GrpcAPI.BytesMessage> responseObserver) {
+        StreamObserver<org.tron.api.GrpcAPI.BytesMessage> responseObserver) {
       try {
         checkSupportShieldedTRC20Transaction();
 
