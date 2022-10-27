@@ -64,7 +64,7 @@ public class ApplicationImpl implements Application {
   @Override
   public void shutdown() {
     logger.info("******** start to shutdown ********");
-    tronNetService.stop();
+    tronNetService.close();
     consensusService.stop();
     synchronized (dbManager.getRevokingStore()) {
       dbManager.getSession().reset();

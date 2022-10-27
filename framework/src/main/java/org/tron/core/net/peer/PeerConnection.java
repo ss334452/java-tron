@@ -2,35 +2,59 @@ package org.tron.core.net.peer;
 
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
+
+import java.net.InetAddress;
+import java.net.InetSocketAddress;
 import java.util.Deque;
 import java.util.HashSet;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedDeque;
 import java.util.concurrent.TimeUnit;
+
+import com.google.protobuf.ByteString;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
-import org.tron.common.overlay.message.HelloMessage;
+import org.tron.core.net.message.base.DisconnectMessage;
+import org.tron.core.net.message.handshake.HelloMessage;
 import org.tron.common.overlay.message.Message;
-import org.tron.common.overlay.server.Channel;
 import org.tron.common.utils.Pair;
 import org.tron.common.utils.Sha256Hash;
 import org.tron.core.Constant;
 import org.tron.core.capsule.BlockCapsule.BlockId;
 import org.tron.core.config.Parameter.NetConstants;
 import org.tron.core.net.TronNetDelegate;
-import org.tron.core.net.service.AdvService;
-import org.tron.core.net.service.SyncService;
+import org.tron.core.net.service.adv.AdvService;
+import org.tron.core.net.service.sync.SyncService;
+import org.tron.p2p.connection.Channel;
+import org.tron.protos.Protocol;
 
 @Slf4j(topic = "net")
 @Component
 @Scope("prototype")
-public class PeerConnection extends Channel {
+public class PeerConnection {
+
+  @Getter
+  @Setter
+  private Channel channel;
+
+  @Getter
+  @Setter
+  private boolean isRelayPeer;
+
+  @Getter
+  @Setter
+  private ByteString address;
+
+  @Getter
+  @Setter
+  private TronState tronState = TronState.INIT;
 
   @Autowired
   private TronNetDelegate tronNetDelegate;
@@ -110,11 +134,8 @@ public class PeerConnection extends Channel {
   }
 
   public void sendMessage(Message message) {
-    msgQueue.sendMessage(message);
-  }
-
-  public void fastSend(Message message) {
-    msgQueue.fastSend(message);
+    logger.info("Send peer {} message {}", channel.getInetSocketAddress(), message);
+    channel.send(message.getSendBytes());
   }
 
   public void onConnect() {
@@ -150,7 +171,6 @@ public class PeerConnection extends Channel {
     long now = System.currentTimeMillis();
     return String.format(
         "Peer %s [%8s]\n"
-            + "ping msg: count %d, max-average-min-last: %d %d %d %d\n"
             + "connect time: %ds\n"
             + "last know block num: %s\n"
             + "needSyncFromPeer:%b\n"
@@ -161,16 +181,10 @@ public class PeerConnection extends Channel {
             + "remainNum:%d\n"
             + "syncChainRequested:%d\n"
             + "blockInProcess:%d\n",
-        getNode().getHost() + ":" + getNode().getPort(),
-        getNode().getHexIdShort(),
+            channel.getInetAddress(),
+            channel.getNodeId(),
 
-        getNodeStatistics().pingMessageLatency.getCount(),
-        getNodeStatistics().pingMessageLatency.getMax(),
-        getNodeStatistics().pingMessageLatency.getAvg(),
-        getNodeStatistics().pingMessageLatency.getMin(),
-        getNodeStatistics().pingMessageLatency.getLast(),
-
-        (now - getStartTime()) / Constant.ONE_THOUSAND,
+        (now - channel.getStartTime()) / Constant.ONE_THOUSAND,
         fastForwardBlock != null ? fastForwardBlock.getNum() : blockBothHave.getNum(),
         isNeedSyncFromPeer(),
         isNeedSyncFromUs(),
@@ -180,12 +194,41 @@ public class PeerConnection extends Channel {
         remainNum,
         syncChainRequested == null ? 0 : (now - syncChainRequested.getValue())
                 / Constant.ONE_THOUSAND,
-        syncBlockInProcess.size())
-        + nodeStatistics.toString() + "\n";
+        syncBlockInProcess.size());
   }
 
   public boolean isSyncFinish() {
     return !(needSyncFromPeer || needSyncFromUs);
+  }
+
+  public void disconnect(Protocol.ReasonCode code) {
+    channel.send(new DisconnectMessage(code).getSendBytes());
+    channel.close();
+  }
+
+  public InetSocketAddress getInetSocketAddress() {
+    return channel.getInetSocketAddress();
+  }
+
+  public InetAddress getInetAddress() {
+    return channel.getInetAddress();
+  }
+
+  public boolean isDisconnect() {
+    return channel.isDisconnect();
+  }
+
+  @Override
+  public boolean equals(Object o) {
+    if (o == null || !(o instanceof PeerConnection)) {
+      return false;
+    }
+    return this.channel.equals(((PeerConnection) o).getChannel());
+  }
+
+  @Override
+  public int hashCode() {
+    return this.channel.hashCode();
   }
 
 }

@@ -21,8 +21,6 @@ import org.tron.common.entity.NodeInfo.MachineInfo;
 import org.tron.common.entity.NodeInfo.MachineInfo.DeadLockThreadInfo;
 import org.tron.common.entity.NodeInfo.MachineInfo.MemoryDescInfo;
 import org.tron.common.entity.PeerInfo;
-import org.tron.common.overlay.discover.node.NodeManager;
-import org.tron.common.overlay.server.SyncPool;
 import org.tron.common.parameter.CommonParameter;
 import org.tron.common.prometheus.MetricTime;
 import org.tron.core.ChainBaseManager;
@@ -41,12 +39,6 @@ public class NodeInfoService {
   private OperatingSystemMXBean operatingSystemMXBean = (OperatingSystemMXBean) ManagementFactory
       .getOperatingSystemMXBean();
   private CommonParameter parameter = CommonParameter.getInstance();
-
-  @Autowired
-  private SyncPool syncPool;
-
-  @Autowired
-  private NodeManager nodeManager;
 
   @Autowired
   private Manager dbManager;
@@ -124,46 +116,46 @@ public class NodeInfoService {
   }
 
   private void setConnectInfo(NodeInfo nodeInfo) {
-    nodeInfo.setCurrentConnectCount(syncPool.getActivePeers().size());
-    nodeInfo.setActiveConnectCount(syncPool.getActivePeersCount().get());
-    nodeInfo.setPassiveConnectCount(syncPool.getPassivePeersCount().get());
+//    nodeInfo.setCurrentConnectCount(syncPool.getActivePeers().size());
+//    nodeInfo.setActiveConnectCount(syncPool.getActivePeersCount().get());
+//    nodeInfo.setPassiveConnectCount(syncPool.getPassivePeersCount().get());
     long totalFlow = 0;
     List<PeerInfo> peerInfoList = new ArrayList<>();
-    for (PeerConnection peerConnection : syncPool.getActivePeers()) {
-      PeerInfo peerInfo = new PeerInfo();
-      peerInfo.setHeadBlockWeBothHave(peerConnection.getBlockBothHave().getString());
-      peerInfo.setActive(peerConnection.isActive());
-      peerInfo.setAvgLatency(peerConnection.getNodeStatistics().pingMessageLatency.getAvg());
-      peerInfo.setBlockInPorcSize(peerConnection.getSyncBlockInProcess().size());
-      peerInfo.setConnectTime(peerConnection.getStartTime());
-      peerInfo.setDisconnectTimes(peerConnection.getNodeStatistics().getDisconnectTimes());
-      //peerInfo.setHeadBlockTimeWeBothHave(peerConnection.getHeadBlockTimeWeBothHave());
-      peerInfo.setHost(peerConnection.getNode().getHost());
-      peerInfo.setInFlow(peerConnection.getNodeStatistics().tcpFlow.getTotalCount());
-      peerInfo.setLastBlockUpdateTime(peerConnection.getBlockBothHaveUpdateTime());
-      peerInfo.setLastSyncBlock(peerConnection.getLastSyncBlockId() == null ? ""
-          : peerConnection.getLastSyncBlockId().getString());
-      ReasonCode reasonCode = peerConnection.getNodeStatistics()
-          .getTronLastLocalDisconnectReason();
-      peerInfo.setLocalDisconnectReason(reasonCode == null ? "" : reasonCode.toString());
-      reasonCode = peerConnection.getNodeStatistics().getTronLastRemoteDisconnectReason();
-      peerInfo.setRemoteDisconnectReason(reasonCode == null ? "" : reasonCode.toString());
-      peerInfo.setNeedSyncFromPeer(peerConnection.isNeedSyncFromPeer());
-      peerInfo.setNeedSyncFromUs(peerConnection.isNeedSyncFromUs());
-      peerInfo.setNodeCount(nodeManager.getTable().getAllNodes().size());
-      peerInfo.setNodeId(peerConnection.getNode().getHexId());
-      peerInfo.setPort(peerConnection.getNode().getPort());
-      peerInfo.setRemainNum(peerConnection.getRemainNum());
-      peerInfo.setScore(peerConnection.getNodeStatistics().getReputation());
-      peerInfo.setSyncBlockRequestedSize(peerConnection.getSyncBlockRequested().size());
-      peerInfo.setSyncFlag(peerConnection.isDisconnect());
-      peerInfo.setSyncToFetchSize(peerConnection.getSyncBlockToFetch().size());
-      peerInfo.setSyncToFetchSizePeekNum(peerConnection.getSyncBlockToFetch().size() > 0
-          ? peerConnection.getSyncBlockToFetch().peek().getNum() : -1);
-      peerInfo.setUnFetchSynNum(peerConnection.getRemainNum());
-      totalFlow += peerConnection.getNodeStatistics().tcpFlow.getTotalCount();
-      peerInfoList.add(peerInfo);
-    }
+//    for (PeerConnection peerConnection : syncPool.getActivePeers()) {
+//      PeerInfo peerInfo = new PeerInfo();
+//      peerInfo.setHeadBlockWeBothHave(peerConnection.getBlockBothHave().getString());
+//      peerInfo.setActive(peerConnection.isActive());
+//      peerInfo.setAvgLatency(peerConnection.getNodeStatistics().pingMessageLatency.getAvg());
+//      peerInfo.setBlockInPorcSize(peerConnection.getSyncBlockInProcess().size());
+//      peerInfo.setConnectTime(peerConnection.getStartTime());
+//      peerInfo.setDisconnectTimes(peerConnection.getNodeStatistics().getDisconnectTimes());
+//      //peerInfo.setHeadBlockTimeWeBothHave(peerConnection.getHeadBlockTimeWeBothHave());
+//      peerInfo.setHost(peerConnection.getNode().getHost());
+//      peerInfo.setInFlow(peerConnection.getNodeStatistics().tcpFlow.getTotalCount());
+//      peerInfo.setLastBlockUpdateTime(peerConnection.getBlockBothHaveUpdateTime());
+//      peerInfo.setLastSyncBlock(peerConnection.getLastSyncBlockId() == null ? ""
+//          : peerConnection.getLastSyncBlockId().getString());
+//      ReasonCode reasonCode = peerConnection.getNodeStatistics()
+//          .getTronLastLocalDisconnectReason();
+//      peerInfo.setLocalDisconnectReason(reasonCode == null ? "" : reasonCode.toString());
+//      reasonCode = peerConnection.getNodeStatistics().getTronLastRemoteDisconnectReason();
+//      peerInfo.setRemoteDisconnectReason(reasonCode == null ? "" : reasonCode.toString());
+//      peerInfo.setNeedSyncFromPeer(peerConnection.isNeedSyncFromPeer());
+//      peerInfo.setNeedSyncFromUs(peerConnection.isNeedSyncFromUs());
+//      peerInfo.setNodeCount(nodeManager.getTable().getAllNodes().size());
+//      peerInfo.setNodeId(peerConnection.getNode().getHexId());
+//      peerInfo.setPort(peerConnection.getNode().getPort());
+//      peerInfo.setRemainNum(peerConnection.getRemainNum());
+//      peerInfo.setScore(peerConnection.getNodeStatistics().getReputation());
+//      peerInfo.setSyncBlockRequestedSize(peerConnection.getSyncBlockRequested().size());
+//      peerInfo.setSyncFlag(peerConnection.isDisconnect());
+//      peerInfo.setSyncToFetchSize(peerConnection.getSyncBlockToFetch().size());
+//      peerInfo.setSyncToFetchSizePeekNum(peerConnection.getSyncBlockToFetch().size() > 0
+//          ? peerConnection.getSyncBlockToFetch().peek().getNum() : -1);
+//      peerInfo.setUnFetchSynNum(peerConnection.getRemainNum());
+//      totalFlow += peerConnection.getNodeStatistics().tcpFlow.getTotalCount();
+//      peerInfoList.add(peerInfo);
+//    }
     nodeInfo.setPeerList(peerInfoList);
     nodeInfo.setTotalFlow(totalFlow);
   }

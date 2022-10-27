@@ -36,6 +36,7 @@ task version(type: Exec) {
 
 dependencies {
     //local libraries
+    compile files('libs/libp2p.jar')
     compile fileTree(dir: 'libs', include: '*.jar')
     // end local libraries
     testCompile group: 'junit', name: 'junit', version: '4.12'
