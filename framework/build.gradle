@@ -36,7 +36,6 @@ task version(type: Exec) {
 
 dependencies {
     //local libraries
-    compile files('libs/libp2p.jar')
     compile fileTree(dir: 'libs', include: '*.jar')
     // end local libraries
     testCompile group: 'junit', name: 'junit', version: '4.12'
@@ -46,7 +45,7 @@ dependencies {
     testCompile group: 'org.testng', name: 'testng', version: '6.14.3'
 
     compile group: 'org.bouncycastle', name: 'bcprov-jdk15on', version: '1.69'
-
+    compile group: 'com.github.tronprotocol', name: 'libp2p', version: 'release-v0.1.0'
     compile group: 'com.typesafe', name: 'config', version: '1.3.2'
 
     compile "com.cedarsoftware:java-util:1.8.0"
