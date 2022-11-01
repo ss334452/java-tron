@@ -15,9 +15,11 @@ import org.tron.core.net.service.adv.AdvService;
 import org.tron.core.net.service.fetchblock.FetchBlockService;
 import org.tron.core.net.service.keepalive.KeepAliveService;
 import org.tron.core.net.service.nodepersist.NodePersistService;
+import org.tron.core.net.service.statistics.TronStatsManager;
 import org.tron.core.net.service.sync.SyncService;
 import org.tron.p2p.P2pConfig;
 import org.tron.p2p.P2pService;
+import org.tron.p2p.stats.StatsManager;
 
 import java.net.InetSocketAddress;
 import java.util.ArrayList;
@@ -59,6 +61,9 @@ public class TronNetService {
   @Autowired
   private NodePersistService nodePersistService;
 
+  @Autowired
+  private TronStatsManager tronStatsManager;
+
   public void start() {
     try {
       p2pConfig = getConfig();
@@ -72,6 +77,7 @@ public class TronNetService {
       fetchBlockService.init();
       keepAliveService.init();
       nodePersistService.init();
+      tronStatsManager.init();
       logger.info("Net service start successfully");
     } catch (Exception e) {
       logger.error("Net service start failed", e);
@@ -79,14 +85,15 @@ public class TronNetService {
   }
 
   public void close(){
+    tronStatsManager.close();
+    nodePersistService.close();
+    keepAliveService.close();
     advService.close();
     syncService.close();
     peerStatusCheck.close();
     transactionsMsgHandler.close();
     fetchBlockService.close();
-    keepAliveService.close();
     p2pService.close();
-    nodePersistService.close();
     logger.info("Net service closed successfully");
   }
 

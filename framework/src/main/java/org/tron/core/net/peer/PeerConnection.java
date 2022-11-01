@@ -21,6 +21,11 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
+import org.tron.common.prometheus.MetricKeys;
+import org.tron.common.prometheus.MetricLabels;
+import org.tron.common.prometheus.Metrics;
+import org.tron.core.metrics.MetricsKey;
+import org.tron.core.metrics.MetricsUtil;
 import org.tron.core.net.message.base.DisconnectMessage;
 import org.tron.core.net.message.handshake.HelloMessage;
 import org.tron.common.overlay.message.Message;
@@ -31,9 +36,15 @@ import org.tron.core.capsule.BlockCapsule.BlockId;
 import org.tron.core.config.Parameter.NetConstants;
 import org.tron.core.net.TronNetDelegate;
 import org.tron.core.net.service.adv.AdvService;
+import org.tron.core.net.service.statistics.MessageStatistics;
+import org.tron.core.net.service.statistics.NodeStatistics;
+import org.tron.core.net.service.statistics.PeerStatistics;
+import org.tron.core.net.service.statistics.TronStatsManager;
 import org.tron.core.net.service.sync.SyncService;
 import org.tron.p2p.connection.Channel;
 import org.tron.protos.Protocol;
+
+import static org.tron.core.net.message.MessageTypes.P2P_DISCONNECT;
 
 @Slf4j(topic = "net")
 @Component
@@ -41,7 +52,12 @@ import org.tron.protos.Protocol;
 public class PeerConnection {
 
   @Getter
-  @Setter
+  private PeerStatistics peerStatistics = new PeerStatistics();
+
+  @Getter
+  private NodeStatistics nodeStatistics;
+
+  @Getter
   private Channel channel;
 
   @Getter
@@ -124,6 +140,11 @@ public class PeerConnection {
   @Getter
   private volatile boolean needSyncFromUs = true;
 
+  public void setChannel(Channel channel) {
+    this.channel = channel;
+    this.nodeStatistics = TronStatsManager.getNodeStatistics(channel.getInetAddress());
+  }
+
   public void setBlockBothHave(BlockId blockId) {
     this.blockBothHave = blockId;
     this.blockBothHaveUpdateTime = System.currentTimeMillis();
@@ -135,7 +156,12 @@ public class PeerConnection {
 
   public void sendMessage(Message message) {
     logger.info("Send peer {} message {}", channel.getInetSocketAddress(), message);
-    channel.send(message.getSendBytes());
+    byte[] sendData = message.getSendBytes();
+    channel.send(sendData);
+    peerStatistics.messageStatistics.addTcpOutMessage(message);
+    if(message.getType().equals(P2P_DISCONNECT)) {
+      nodeStatistics.nodeDisconnectedLocal(((DisconnectMessage)message).getReason());
+    }
   }
 
   public void onConnect() {

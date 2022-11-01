@@ -20,6 +20,7 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
+import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -36,6 +37,7 @@ import org.tron.core.net.message.adv.TransactionMessage;
 import org.tron.core.net.peer.Item;
 import org.tron.core.net.peer.PeerConnection;
 import org.tron.core.net.service.fetchblock.FetchBlockService;
+import org.tron.core.net.service.statistics.MessageCount;
 import org.tron.protos.Protocol.Inventory.InventoryType;
 
 @Slf4j(topic = "net")
@@ -74,6 +76,9 @@ public class AdvService {
   private ScheduledExecutorService spreadExecutor = Executors.newSingleThreadScheduledExecutor();
 
   private ScheduledExecutorService fetchExecutor = Executors.newSingleThreadScheduledExecutor();
+
+  @Getter
+  private MessageCount trxCount = new MessageCount();
 
   private boolean fastForward = Args.getInstance().isFastForward();
 
@@ -153,6 +158,7 @@ public class AdvService {
     }
 
     Item item = new Item(msg.getMessageId(), InventoryType.TRX);
+    trxCount.add();
     trxCache.put(item, new TransactionMessage(msg.getTransactionCapsule().getInstance()));
 
     List<Sha256Hash> list = new ArrayList<>();
@@ -200,6 +206,7 @@ public class AdvService {
     } else if (msg instanceof TransactionMessage) {
       TransactionMessage trxMsg = (TransactionMessage) msg;
       item = new Item(trxMsg.getMessageId(), InventoryType.TRX);
+      trxCount.add();
       trxCache.put(item, new TransactionMessage(trxMsg.getTransactionCapsule().getInstance()));
     } else {
       logger.error("Adv item is neither block nor trx, type: {}", msg.getType());

@@ -55,15 +55,15 @@ public class InventoryMsgHandler implements TronMsgHandler {
     }
 
     if (type.equals(InventoryType.TRX)) {
-//      int count = peer.getNodeStatistics().messageStatistics.tronInTrxInventoryElement.getCount(10);
-//      if (count > maxCountIn10s) {
-//        logger.warn("Drop inv: {} size: {} from Peer {}, Inv count: {} is overload",
-//            type, size, peer.getInetAddress(), count);
-//        if (Args.getInstance().isOpenPrintLog()) {
-//          logger.warn("[overload]Drop tx list is: {}", inventoryMessage.getHashList());
-//        }
-//        return false;
-//      }
+      int count = peer.getPeerStatistics().messageStatistics.tronInTrxInventoryElement.getCount(10);
+      if (count > maxCountIn10s) {
+        logger.warn("Drop inv: {} size: {} from Peer {}, Inv count: {} is overload",
+            type, size, peer.getInetAddress(), count);
+        if (Args.getInstance().isOpenPrintLog()) {
+          logger.warn("[overload]Drop tx list is: {}", inventoryMessage.getHashList());
+        }
+        return false;
+      }
 
       if (transactionsMsgHandler.isBusy()) {
         logger.warn("Drop inv: {} size: {} from Peer {}, transactionsMsgHandler is busy",

@@ -28,8 +28,8 @@ public class DisconnectMessage extends TronMessage {
     this.data = this.disconnectMessage.toByteArray();
   }
 
-  public int getReason() {
-    return this.disconnectMessage.getReason().getNumber();
+  public ReasonCode getReason() {
+    return this.disconnectMessage.getReason();
   }
 
   public ReasonCode getReasonCode() {

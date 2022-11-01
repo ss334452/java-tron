@@ -136,6 +136,14 @@ public class FetchInvDataMsgHandler implements TronMsgHandler {
           throw new P2pException(TypeEnum.BAD_MESSAGE, "not spread inv: {}" + hash);
         }
       }
+      int fetchCount = peer.getPeerStatistics().messageStatistics.tronInTrxFetchInvDataElement
+              .getCount(10);
+      int maxCount = advService.getTrxCount().getCount(60);
+      if (fetchCount > maxCount) {
+        logger.warn("Peer fetch too more transactions in 10 seconds, "
+                        + "maxCount: {}, fetchCount: {}, peer: {}",
+                maxCount, fetchCount, peer.getInetAddress());
+      }
     } else {
       boolean isAdv = true;
       for (Sha256Hash hash : fetchInvDataMsg.getHashList()) {
