@@ -201,7 +201,6 @@ public class SyncService {
 
   private void startFetchSyncBlock() {
     HashMap<PeerConnection, List<BlockId>> send = new HashMap<>();
-
     tronNetDelegate.getActivePeer().stream()
         .filter(peer -> peer.isNeedSyncFromPeer() && peer.isIdle())
         .forEach(peer -> {

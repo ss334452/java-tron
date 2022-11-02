@@ -10,6 +10,7 @@ import org.tron.core.config.args.Args;
 import org.tron.core.net.message.adv.TransactionMessage;
 import org.tron.core.net.messagehandler.TransactionsMsgHandler;
 import org.tron.core.net.peer.PeerConnection;
+import org.tron.core.net.peer.PeerManager;
 import org.tron.core.net.peer.PeerStatusCheck;
 import org.tron.core.net.service.adv.AdvService;
 import org.tron.core.net.service.fetchblock.FetchBlockService;
@@ -78,6 +79,7 @@ public class TronNetService {
       keepAliveService.init();
       nodePersistService.init();
       tronStatsManager.init();
+      PeerManager.init();
       logger.info("Net service start successfully");
     } catch (Exception e) {
       logger.error("Net service start failed", e);
@@ -85,6 +87,7 @@ public class TronNetService {
   }
 
   public void close(){
+    PeerManager.close();
     tronStatsManager.close();
     nodePersistService.close();
     keepAliveService.close();
@@ -98,7 +101,7 @@ public class TronNetService {
   }
 
   public static List<PeerConnection> getPeers() {
-    return P2pEventHandlerImpl.getPeers();
+    return PeerManager.getPeers();
   }
 
   public void broadcast(Message msg) {

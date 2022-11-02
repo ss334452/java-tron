@@ -10,6 +10,7 @@ import org.tron.core.net.P2pEventHandlerImpl;
 import org.tron.core.net.TronNetService;
 import org.tron.core.net.message.handshake.HelloMessage;
 import org.tron.core.net.peer.PeerConnection;
+import org.tron.core.net.peer.PeerManager;
 import org.tron.core.net.service.relay.RelayService;
 import org.tron.p2p.discover.Node;
 import org.tron.protos.Protocol.ReasonCode;
@@ -106,7 +107,7 @@ public class HandshakeService {
 
     peer.getChannel().updateLatency(
             System.currentTimeMillis() - peer.getChannel().getStartTime());
-    P2pEventHandlerImpl.sortPeers();
+    PeerManager.sortPeers();
     peer.onConnect();
     return;
   }

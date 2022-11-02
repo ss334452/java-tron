@@ -30,6 +30,7 @@ import org.tron.core.db.Manager;
 import org.tron.core.net.P2pEventHandlerImpl;
 import org.tron.core.net.TronNetService;
 import org.tron.core.net.peer.PeerConnection;
+import org.tron.core.net.peer.PeerManager;
 import org.tron.core.net.service.statistics.NodeStatistics;
 import org.tron.core.net.service.statistics.PeerStatistics;
 import org.tron.core.services.WitnessProductBlockService.CheatWitnessInfo;
@@ -125,13 +126,13 @@ public class NodeInfoService {
   }
 
   private void setConnectInfo(NodeInfo nodeInfo) {
-    int activeCnt = P2pEventHandlerImpl.getActivePeersCount().get();
-    int passiveCnt = P2pEventHandlerImpl.getPassivePeersCount().get();
+    int activeCnt = PeerManager.getActivePeersCount().get();
+    int passiveCnt = PeerManager.getPassivePeersCount().get();
     nodeInfo.setCurrentConnectCount(activeCnt + passiveCnt);
     nodeInfo.setActiveConnectCount(activeCnt);
     nodeInfo.setPassiveConnectCount(passiveCnt);
     List<PeerInfo> peerInfoList = new ArrayList<>();
-    for (PeerConnection peerConnection : P2pEventHandlerImpl.getPeers()) {
+    for (PeerConnection peerConnection : PeerManager.getPeers()) {
       Channel channel = peerConnection.getChannel();
       NodeStatistics nodeStatistics = peerConnection.getNodeStatistics();
       P2pService P2pService = TronNetService.getP2pService();

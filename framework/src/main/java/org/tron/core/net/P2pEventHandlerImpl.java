@@ -14,7 +14,6 @@ import org.tron.core.net.message.MessageTypes;
 import org.tron.core.net.message.PbftMessageFactory;
 import org.tron.core.net.message.TronMessage;
 import org.tron.core.net.message.TronMessageFactory;
-import org.tron.core.net.message.base.DisconnectMessage;
 import org.tron.core.net.message.handshake.HelloMessage;
 import org.tron.core.net.messagehandler.BlockMsgHandler;
 import org.tron.core.net.messagehandler.ChainInventoryMsgHandler;
@@ -25,6 +24,7 @@ import org.tron.core.net.messagehandler.PbftMsgHandler;
 import org.tron.core.net.messagehandler.SyncBlockChainMsgHandler;
 import org.tron.core.net.messagehandler.TransactionsMsgHandler;
 import org.tron.core.net.peer.PeerConnection;
+import org.tron.core.net.peer.PeerManager;
 import org.tron.core.net.service.handshake.HandshakeService;
 import org.tron.core.net.service.keepalive.KeepAliveService;
 import org.tron.p2p.P2pEventHandler;
@@ -48,9 +48,7 @@ public class P2pEventHandlerImpl extends P2pEventHandler {
   @Getter
   private static AtomicInteger passivePeersCount = new AtomicInteger(0);
   @Getter
-  private static AtomicInteger activePeersCount = new AtomicInteger(0);
-
-  private static List<PeerConnection> peers = Collections.synchronizedList(new ArrayList<>());
+  private final AtomicInteger activePeersCount = new AtomicInteger(0);
 
   @Autowired
   private ApplicationContext ctx;
@@ -94,38 +92,26 @@ public class P2pEventHandlerImpl extends P2pEventHandler {
   }
 
   @Override
-  public synchronized void onConnect(Channel c) {
-    PeerConnection peerConnection = getPeerConnection(c);
-    if (peerConnection == null) {
-      peerConnection = ctx.getBean(PeerConnection.class);
-      peerConnection.setChannel(c);
-      peers.add(peerConnection);
-      if (c.isActive()) {
-        activePeersCount.incrementAndGet();
-      } else {
-        passivePeersCount.incrementAndGet();
-      }
+  public synchronized void onConnect(Channel channel) {
+    PeerConnection peerConnection = PeerManager.add(ctx, channel);
+    if (peerConnection != null) {
       handshakeService.startHandshake(peerConnection);
     }
   }
 
+
+
   @Override
-  public synchronized void onDisconnect(Channel c) {
-    PeerConnection peerConnection = getPeerConnection(c);
+  public synchronized void onDisconnect(Channel channel) {
+    PeerConnection peerConnection = PeerManager.remove(channel);
     if (peerConnection != null) {
-      peers.remove(peerConnection);
-      if (c.isActive()) {
-        activePeersCount.decrementAndGet();
-      } else {
-        passivePeersCount.decrementAndGet();
-      }
       peerConnection.onDisconnect();
     }
   }
 
   @Override
   public void onMessage(Channel c, byte[] data) {
-    PeerConnection peerConnection = getPeerConnection(c);
+    PeerConnection peerConnection = PeerManager.getPeerConnection(c);
     if (peerConnection == null) {
       logger.warn("Receive msg from unknown peer {}", c.getInetSocketAddress());
       return;
@@ -148,7 +134,7 @@ public class P2pEventHandlerImpl extends P2pEventHandler {
   }
 
   private void processMessage(PeerConnection peer, byte[] data) {
-    long time = System.currentTimeMillis();
+    long startTime = System.currentTimeMillis();
     TronMessage msg = null;
     try {
       msg = TronMessageFactory.create(data);
@@ -159,16 +145,12 @@ public class P2pEventHandlerImpl extends P2pEventHandler {
         case P2P_PING:
         case P2P_PONG:
           keepAliveService.processMessage(peer, msg);
-          Metrics.histogramObserve(MetricKeys.Histogram.PING_PONG_LATENCY,
-                  (time - peer.getChannel().pingSent) / Metrics.MILLISECONDS_PER_SECOND);
           break;
         case P2P_HELLO:
           handshakeService.processHelloMessage(peer, (HelloMessage)msg);
           break;
         case P2P_DISCONNECT:
           peer.getChannel().close();
-          peer.getNodeStatistics().nodeDisconnectedRemote(
-                  ((DisconnectMessage)msg).getReason());
           break;
         case SYNC_BLOCK_CHAIN:
           syncBlockChainMsgHandler.processMessage(peer, msg);
@@ -197,7 +179,7 @@ public class P2pEventHandlerImpl extends P2pEventHandler {
     } catch (Exception e) {
       processException(peer, msg, e);
     } finally {
-      long costs = System.currentTimeMillis() - time;
+      long costs = System.currentTimeMillis() - startTime;
       if (costs > 50) {
         logger.info("Message processing costs {} ms, peer: {}, type: {}, time tag: {}",
                 costs, peer.getInetAddress(), msg.getType(), getTimeTag(costs));
@@ -257,26 +239,4 @@ public class P2pEventHandlerImpl extends P2pEventHandler {
     return tag.toString();
   }
 
-  private PeerConnection getPeerConnection(Channel channel) {
-    for(PeerConnection peer: new ArrayList<>(peers)) {
-      if (peer.getChannel().equals(channel)) {
-        return peer;
-      }
-    }
-    return null;
-  }
-
-  public static List<PeerConnection> getPeers() {
-    List<PeerConnection> peers = Lists.newArrayList();
-    for (PeerConnection peer : new ArrayList<>(P2pEventHandlerImpl.peers)) {
-      if (!peer.isDisconnect()) {
-        peers.add(peer);
-      }
-    }
-    return peers;
-  }
-
-  public synchronized static void sortPeers(){
-    peers.sort(Comparator.comparingDouble(c -> c.getChannel().getLatency()));
-  }
 }
