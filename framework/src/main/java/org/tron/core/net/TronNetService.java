@@ -1,5 +1,8 @@
 package org.tron.core.net;
 
+import java.net.InetSocketAddress;
+import java.util.ArrayList;
+import java.util.List;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,10 +23,6 @@ import org.tron.core.net.service.statistics.TronStatsManager;
 import org.tron.core.net.service.sync.SyncService;
 import org.tron.p2p.P2pConfig;
 import org.tron.p2p.P2pService;
-
-import java.net.InetSocketAddress;
-import java.util.ArrayList;
-import java.util.List;
 
 @Slf4j(topic = "net")
 @Component
@@ -85,7 +84,7 @@ public class TronNetService {
     }
   }
 
-  public void close(){
+  public void close() {
     PeerManager.close();
     tronStatsManager.close();
     nodePersistService.close();
@@ -114,8 +113,8 @@ public class TronNetService {
   private P2pConfig getConfig() {
     List<InetSocketAddress> seeds = new ArrayList<>();
     seeds.addAll(nodePersistService.dbRead());
-    for (String s: parameter.getSeedNode().getIpList()) {
-      String sz[] = s.split(":");
+    for (String s : parameter.getSeedNode().getIpList()) {
+      String[] sz = s.split(":");
       seeds.add(new InetSocketAddress(sz[0], Integer.parseInt(sz[1])));
     }
 

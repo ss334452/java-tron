@@ -1,6 +1,8 @@
 package org.tron.core.net;
 
-import com.google.common.collect.Lists;
+import java.util.HashSet;
+import java.util.Set;
+import java.util.concurrent.atomic.AtomicInteger;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -30,14 +32,6 @@ import org.tron.core.net.service.keepalive.KeepAliveService;
 import org.tron.p2p.P2pEventHandler;
 import org.tron.p2p.connection.Channel;
 import org.tron.protos.Protocol;
-
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-import java.util.concurrent.atomic.AtomicInteger;
 
 @Slf4j(topic = "net")
 @Component
@@ -87,7 +81,7 @@ public class P2pEventHandlerImpl extends P2pEventHandler {
 
   public P2pEventHandlerImpl() {
     Set<Byte> set = new HashSet<>();
-    for (byte i = 0; i< MESSAGE_MAX_TYPE; i++) {
+    for (byte i = 0; i < MESSAGE_MAX_TYPE; i++) {
       set.add(i);
     }
     messageTypes = set;
@@ -120,9 +114,9 @@ public class P2pEventHandlerImpl extends P2pEventHandler {
     if (MessageTypes.PBFT_MSG.asByte() == data[0]) {
       PbftMessage message = null;
       try {
-        message = (PbftMessage)PbftMessageFactory.create(data);
+        message = (PbftMessage) PbftMessageFactory.create(data);
         pbftMsgHandler.processMessage(peerConnection, message);
-      }catch (Exception e) {
+      } catch (Exception e) {
         logger.warn("PBFT Message from {} process failed, {}",
                 peerConnection.getInetAddress(), message, e);
         peerConnection.disconnect(Protocol.ReasonCode.BAD_PROTOCOL);
@@ -140,14 +134,14 @@ public class P2pEventHandlerImpl extends P2pEventHandler {
       msg = TronMessageFactory.create(data);
       peer.getPeerStatistics().messageStatistics.addTcpInMessage(msg);
       logger.info("Receive message from  peer: {}, {}",
-                peer.getInetAddress(), msg);
+              peer.getInetAddress(), msg);
       switch (msg.getType()) {
         case P2P_PING:
         case P2P_PONG:
           keepAliveService.processMessage(peer, msg);
           break;
         case P2P_HELLO:
-          handshakeService.processHelloMessage(peer, (HelloMessage)msg);
+          handshakeService.processHelloMessage(peer, (HelloMessage) msg);
           break;
         case P2P_DISCONNECT:
           peer.getChannel().close();

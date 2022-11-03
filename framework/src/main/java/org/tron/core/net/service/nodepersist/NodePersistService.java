@@ -1,5 +1,11 @@
 package org.tron.core.net.service.nodepersist;
 
+import java.net.InetSocketAddress;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.List;
+import java.util.Timer;
+import java.util.TimerTask;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import org.tron.common.utils.ByteArray;
@@ -9,13 +15,6 @@ import org.tron.core.capsule.BytesCapsule;
 import org.tron.core.config.args.Args;
 import org.tron.core.net.TronNetService;
 import org.tron.p2p.discover.Node;
-
-import java.net.InetSocketAddress;
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Timer;
-import java.util.TimerTask;
 
 @Slf4j(topic = "net")
 @Component

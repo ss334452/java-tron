@@ -1,7 +1,5 @@
 package org.tron.core.net.service.statistics;
 
-
-import lombok.extern.slf4j.Slf4j;
 import org.tron.common.overlay.message.Message;
 import org.tron.core.net.message.MessageTypes;
 import org.tron.core.net.message.adv.FetchInvDataMessage;

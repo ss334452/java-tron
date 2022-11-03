@@ -1,5 +1,8 @@
 package org.tron.core.net.service.keepalive;
 
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import org.tron.core.net.TronNetService;
@@ -9,10 +12,6 @@ import org.tron.core.net.message.keepalive.PingMessage;
 import org.tron.core.net.message.keepalive.PongMessage;
 import org.tron.core.net.peer.PeerConnection;
 import org.tron.protos.Protocol;
-
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
 
 @Slf4j(topic = "net")
 @Component

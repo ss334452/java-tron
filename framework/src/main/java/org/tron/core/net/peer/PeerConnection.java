@@ -1,56 +1,51 @@
 package org.tron.core.net.peer;
 
+import static org.tron.core.net.message.MessageTypes.P2P_DISCONNECT;
+
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
-
+import com.google.protobuf.ByteString;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.util.Deque;
 import java.util.HashSet;
 import java.util.Locale;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedDeque;
 import java.util.concurrent.TimeUnit;
-
-import com.google.protobuf.ByteString;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
+import org.tron.common.overlay.message.Message;
 import org.tron.common.prometheus.MetricKeys;
-import org.tron.common.prometheus.MetricLabels;
 import org.tron.common.prometheus.Metrics;
+import org.tron.common.utils.Pair;
+import org.tron.common.utils.Sha256Hash;
 import org.tron.consensus.pbft.message.PbftBaseMessage;
+import org.tron.core.Constant;
+import org.tron.core.capsule.BlockCapsule.BlockId;
+import org.tron.core.config.Parameter.NetConstants;
 import org.tron.core.metrics.MetricsKey;
 import org.tron.core.metrics.MetricsUtil;
+import org.tron.core.net.TronNetDelegate;
 import org.tron.core.net.message.adv.InventoryMessage;
 import org.tron.core.net.message.adv.TransactionsMessage;
 import org.tron.core.net.message.base.DisconnectMessage;
 import org.tron.core.net.message.handshake.HelloMessage;
-import org.tron.common.overlay.message.Message;
-import org.tron.common.utils.Pair;
-import org.tron.common.utils.Sha256Hash;
-import org.tron.core.Constant;
-import org.tron.core.capsule.BlockCapsule.BlockId;
-import org.tron.core.config.Parameter.NetConstants;
-import org.tron.core.net.TronNetDelegate;
 import org.tron.core.net.message.keepalive.PingMessage;
 import org.tron.core.net.message.keepalive.PongMessage;
 import org.tron.core.net.service.adv.AdvService;
-import org.tron.core.net.service.statistics.MessageStatistics;
 import org.tron.core.net.service.statistics.NodeStatistics;
 import org.tron.core.net.service.statistics.PeerStatistics;
 import org.tron.core.net.service.statistics.TronStatsManager;
 import org.tron.core.net.service.sync.SyncService;
 import org.tron.p2p.connection.Channel;
 import org.tron.protos.Protocol;
-
-import static org.tron.core.net.message.MessageTypes.P2P_DISCONNECT;
 
 @Slf4j(topic = "net")
 @Component
@@ -169,7 +164,7 @@ public class PeerConnection {
     byte[] sendData = message.getSendBytes();
     channel.send(sendData);
     peerStatistics.messageStatistics.addTcpOutMessage(message);
-    if(message.getType().equals(P2P_DISCONNECT)) {
+    if (message.getType().equals(P2P_DISCONNECT)) {
       nodeStatistics.nodeDisconnectedLocal(((DisconnectMessage)message).getReason());
     }
   }
@@ -282,8 +277,8 @@ public class PeerConnection {
       return false;
     }
 
-    if (msg instanceof InventoryMessage
-            && ((InventoryMessage) msg).getInventoryType().equals(Protocol.Inventory.InventoryType.TRX)) {
+    if (msg instanceof InventoryMessage && ((InventoryMessage) msg)
+            .getInventoryType().equals(Protocol.Inventory.InventoryType.TRX)) {
       return false;
     }
 

@@ -1096,14 +1096,15 @@ public class Args extends CommonParameter {
     return initialization;
   }
 
-  private static List<InetSocketAddress> getInetSocketAddress(final com.typesafe.config.Config config, String path) {
+  private static List<InetSocketAddress> getInetSocketAddress(
+          final com.typesafe.config.Config config, String path) {
     if (!config.hasPath(path)) {
       return Collections.emptyList();
     }
     List<InetSocketAddress> ret = new ArrayList<>();
     List<String> list = config.getStringList(path);
     for (String configString : list) {
-      String sz[] = configString.split(":");
+      String[] sz = configString.split(":");
       String ip = sz[0];
       int port = Integer.parseInt(sz[1]);
       if (!(PARAMETER.nodeDiscoveryBindIp.equals(ip)
@@ -1116,7 +1117,8 @@ public class Args extends CommonParameter {
     return ret;
   }
 
-  private static List<InetAddress> getInetAddress(final com.typesafe.config.Config config, String path) {
+  private static List<InetAddress> getInetAddress(
+          final com.typesafe.config.Config config, String path) {
     if (!config.hasPath(path)) {
       return Collections.emptyList();
     }
@@ -1125,12 +1127,15 @@ public class Args extends CommonParameter {
     for (String configString : list) {
       try {
         ret.add(InetAddress.getByName(configString.split(":")[0]));
-      } catch (Exception e){}
+      } catch (Exception e) {
+        logger.warn("Get inet address failed, {}", e.getMessage());
+      }
     }
     return ret;
   }
 
-  private static EventPluginConfig getEventPluginConfig(final com.typesafe.config.Config config) {
+  private static EventPluginConfig getEventPluginConfig(
+          final com.typesafe.config.Config config) {
     EventPluginConfig eventPluginConfig = new EventPluginConfig();
 
     boolean useNativeQueue = false;

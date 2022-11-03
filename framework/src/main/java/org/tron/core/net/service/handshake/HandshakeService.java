@@ -1,12 +1,12 @@
 package org.tron.core.net.service.handshake;
 
+import java.util.Arrays;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.tron.common.utils.ByteArray;
 import org.tron.core.ChainBaseManager;
 import org.tron.core.config.args.Args;
-import org.tron.core.net.P2pEventHandlerImpl;
 import org.tron.core.net.TronNetService;
 import org.tron.core.net.message.handshake.HelloMessage;
 import org.tron.core.net.peer.PeerConnection;
@@ -14,8 +14,6 @@ import org.tron.core.net.peer.PeerManager;
 import org.tron.core.net.service.relay.RelayService;
 import org.tron.p2p.discover.Node;
 import org.tron.protos.Protocol.ReasonCode;
-
-import java.util.Arrays;
 
 @Slf4j(topic = "net")
 @Component
@@ -63,7 +61,7 @@ public class HandshakeService {
     }
 
     long headBlockNum = chainBaseManager.getHeadBlockNum();
-    long lowestBlockNum =  msg.getLowestBlockNum();
+    long lowestBlockNum = msg.getLowestBlockNum();
     if (lowestBlockNum > headBlockNum) {
       logger.info("Peer {} miss block, lowestBlockNum:{}, headBlockNum:{}",
               peer.getInetSocketAddress(), lowestBlockNum, headBlockNum);
@@ -73,14 +71,14 @@ public class HandshakeService {
 
     if (msg.getVersion() != Args.getInstance().getNodeP2pVersion()) {
       logger.info("Peer {} different p2p version, peer->{}, me->{}",
-              peer.getInetSocketAddress(), msg.getVersion(), Args.getInstance().getNodeP2pVersion());
+              peer.getInetSocketAddress(), msg.getVersion(),
+              Args.getInstance().getNodeP2pVersion());
       peer.disconnect(ReasonCode.INCOMPATIBLE_VERSION);
       return;
     }
 
-    if (!Arrays
-            .equals(chainBaseManager.getGenesisBlockId().getBytes(),
-                    msg.getGenesisBlockId().getBytes())) {
+    if (!Arrays.equals(chainBaseManager.getGenesisBlockId().getBytes(),
+            msg.getGenesisBlockId().getBytes())) {
       logger.info("Peer {} different genesis block, peer->{}, me->{}",
               peer.getInetSocketAddress(),
               msg.getGenesisBlockId().getString(),

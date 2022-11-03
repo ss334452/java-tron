@@ -6,7 +6,6 @@ import java.util.Deque;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.NoSuchElementException;
-
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,8 +16,8 @@ import org.tron.core.config.Parameter.NetConstants;
 import org.tron.core.exception.P2pException;
 import org.tron.core.exception.P2pException.TypeEnum;
 import org.tron.core.net.TronNetDelegate;
-import org.tron.core.net.message.sync.ChainInventoryMessage;
 import org.tron.core.net.message.TronMessage;
+import org.tron.core.net.message.sync.ChainInventoryMessage;
 import org.tron.core.net.peer.PeerConnection;
 import org.tron.core.net.peer.TronState;
 import org.tron.core.net.service.sync.SyncService;

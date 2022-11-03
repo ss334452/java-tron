@@ -2,6 +2,10 @@ package org.tron.core.net.service.statistics;
 
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
+import java.net.InetAddress;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import org.tron.common.prometheus.MetricKeys;
@@ -11,12 +15,6 @@ import org.tron.core.metrics.MetricsKey;
 import org.tron.core.metrics.MetricsUtil;
 import org.tron.core.net.TronNetService;
 import org.tron.p2p.stats.P2pStats;
-import org.tron.protos.Protocol;
-
-import java.net.InetAddress;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
 
 @Slf4j(topic = "net")
 @Component

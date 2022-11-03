@@ -2,6 +2,12 @@ package org.tron.core.net.services;
 
 import com.google.common.collect.Lists;
 import com.google.protobuf.ByteString;
+import java.io.File;
+import java.lang.reflect.Method;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.List;
+import java.util.Set;
 import org.bouncycastle.util.encoders.Hex;
 import org.junit.After;
 import org.junit.Assert;
@@ -22,13 +28,6 @@ import org.tron.core.net.peer.Item;
 import org.tron.core.net.peer.PeerConnection;
 import org.tron.core.net.service.relay.RelayService;
 import org.tron.protos.Protocol;
-
-import java.io.File;
-import java.lang.reflect.Method;
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Set;
 
 public class RelayServiceTest {
 

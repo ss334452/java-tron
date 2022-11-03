@@ -1,14 +1,6 @@
 package org.tron.core.net.peer;
 
 import com.google.common.collect.Lists;
-import lombok.Getter;
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.context.ApplicationContext;
-import org.tron.common.prometheus.MetricKeys;
-import org.tron.common.prometheus.MetricLabels;
-import org.tron.common.prometheus.Metrics;
-import org.tron.p2p.connection.Channel;
-
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -17,6 +9,13 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
+import lombok.Getter;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.context.ApplicationContext;
+import org.tron.common.prometheus.MetricKeys;
+import org.tron.common.prometheus.MetricLabels;
+import org.tron.common.prometheus.Metrics;
+import org.tron.p2p.connection.Channel;
 
 @Slf4j(topic = "net")
 public class PeerManager {
@@ -55,7 +54,7 @@ public class PeerManager {
     }
   }
 
-  public synchronized static PeerConnection add(ApplicationContext ctx, Channel channel) {
+  public static synchronized PeerConnection add(ApplicationContext ctx, Channel channel) {
     PeerConnection peerConnection = getPeerConnection(channel);
     if (peerConnection != null) {
       return null;
@@ -71,7 +70,7 @@ public class PeerManager {
     return peerConnection;
   }
 
-  public synchronized static PeerConnection remove(Channel channel) {
+  public static synchronized PeerConnection remove(Channel channel) {
     PeerConnection peerConnection = getPeerConnection(channel);
     if (peerConnection == null) {
       return null;
@@ -80,12 +79,21 @@ public class PeerManager {
     return peerConnection;
   }
 
-  public synchronized static void sortPeers(){
+  private static void remove(PeerConnection peerConnection) {
+    peers.remove(peerConnection);
+    if (peerConnection.getChannel().isActive()) {
+      activePeersCount.decrementAndGet();
+    } else {
+      passivePeersCount.decrementAndGet();
+    }
+  }
+
+  public static synchronized void sortPeers() {
     peers.sort(Comparator.comparingDouble(c -> c.getChannel().getLatency()));
   }
 
   public static PeerConnection getPeerConnection(Channel channel) {
-    for(PeerConnection peer: new ArrayList<>(peers)) {
+    for (PeerConnection peer : new ArrayList<>(peers)) {
       if (peer.getChannel().equals(channel)) {
         return peer;
       }
@@ -101,15 +109,6 @@ public class PeerManager {
       }
     }
     return peers;
-  }
-
-  private static void remove(PeerConnection peerConnection) {
-    peers.remove(peerConnection);
-    if (peerConnection.getChannel().isActive()) {
-      activePeersCount.decrementAndGet();
-    } else {
-      passivePeersCount.decrementAndGet();
-    }
   }
 
   private static void check() {

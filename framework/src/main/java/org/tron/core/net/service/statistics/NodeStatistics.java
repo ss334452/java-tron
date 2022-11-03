@@ -51,29 +51,4 @@ public class NodeStatistics {
             .append(", remoteReason:").append(remoteDisconnectReason).toString();
   }
 
-//  public class SimpleStatter {
-//
-//    private long sum;
-//    @Getter
-//    private long count;
-//    @Getter
-//    private long last;
-//    @Getter
-//    private long min;
-//    @Getter
-//    private long max;
-//
-//    public void add(long value) {
-//      last = value;
-//      sum += value;
-//      min = min == 0 ? value : Math.min(min, value);
-//      max = Math.max(max, value);
-//      count++;
-//    }
-//
-//    public long getAvg() {
-//      return count == 0 ? 0 : sum / count;
-//    }
-//  }
-
 }

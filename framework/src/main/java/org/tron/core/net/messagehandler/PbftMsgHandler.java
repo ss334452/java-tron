@@ -3,6 +3,8 @@ package org.tron.core.net.messagehandler;
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.util.concurrent.Striped;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.locks.Lock;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.tron.consensus.base.Param;
@@ -12,9 +14,6 @@ import org.tron.consensus.pbft.message.PbftMessage;
 import org.tron.core.exception.P2pException;
 import org.tron.core.net.TronNetService;
 import org.tron.core.net.peer.PeerConnection;
-
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.locks.Lock;
 
 @Component
 public class PbftMsgHandler {
