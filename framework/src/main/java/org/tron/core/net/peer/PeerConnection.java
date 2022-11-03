@@ -7,6 +7,7 @@ import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.util.Deque;
 import java.util.HashSet;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
@@ -24,8 +25,11 @@ import org.springframework.stereotype.Component;
 import org.tron.common.prometheus.MetricKeys;
 import org.tron.common.prometheus.MetricLabels;
 import org.tron.common.prometheus.Metrics;
+import org.tron.consensus.pbft.message.PbftBaseMessage;
 import org.tron.core.metrics.MetricsKey;
 import org.tron.core.metrics.MetricsUtil;
+import org.tron.core.net.message.adv.InventoryMessage;
+import org.tron.core.net.message.adv.TransactionsMessage;
 import org.tron.core.net.message.base.DisconnectMessage;
 import org.tron.core.net.message.handshake.HelloMessage;
 import org.tron.common.overlay.message.Message;
@@ -35,6 +39,8 @@ import org.tron.core.Constant;
 import org.tron.core.capsule.BlockCapsule.BlockId;
 import org.tron.core.config.Parameter.NetConstants;
 import org.tron.core.net.TronNetDelegate;
+import org.tron.core.net.message.keepalive.PingMessage;
+import org.tron.core.net.message.keepalive.PongMessage;
 import org.tron.core.net.service.adv.AdvService;
 import org.tron.core.net.service.statistics.MessageStatistics;
 import org.tron.core.net.service.statistics.NodeStatistics;
@@ -90,6 +96,8 @@ public class PeerConnection {
   private HelloMessage helloMessageSend;
 
   private int invCacheSize = 20_000;
+
+  private long BAD_PEER_BAN_TIME = 3600 * 1000;
 
   @Setter
   @Getter
@@ -155,7 +163,9 @@ public class PeerConnection {
   }
 
   public void sendMessage(Message message) {
-    logger.info("Send peer {} message {}", channel.getInetSocketAddress(), message);
+    if (needToLog(message)) {
+      logger.info("Send peer {} message {}", channel.getInetSocketAddress(), message);
+    }
     byte[] sendData = message.getSendBytes();
     channel.send(sendData);
     peerStatistics.messageStatistics.addTcpOutMessage(message);
@@ -196,8 +206,8 @@ public class PeerConnection {
   public String log() {
     long now = System.currentTimeMillis();
     return String.format(
-        "Peer %s [%8s]\n"
-            + "connect time: %ds\n"
+        "Peer %s\n"
+            + "connect time: %ds [%sms]\n"
             + "last know block num: %s\n"
             + "needSyncFromPeer:%b\n"
             + "needSyncFromUs:%b\n"
@@ -207,10 +217,9 @@ public class PeerConnection {
             + "remainNum:%d\n"
             + "syncChainRequested:%d\n"
             + "blockInProcess:%d\n",
-            channel.getInetAddress(),
-            channel.getNodeId(),
-
+        channel.getInetAddress(),
         (now - channel.getStartTime()) / Constant.ONE_THOUSAND,
+        channel.getLatency(),
         fastForwardBlock != null ? fastForwardBlock.getNum() : blockBothHave.getNum(),
         isNeedSyncFromPeer(),
         isNeedSyncFromUs(),
@@ -229,7 +238,7 @@ public class PeerConnection {
 
   public void disconnect(Protocol.ReasonCode code) {
     channel.send(new DisconnectMessage(code).getSendBytes());
-    channel.close();
+    processDisconnect(code);
   }
 
   public InetSocketAddress getInetSocketAddress() {
@@ -242,6 +251,43 @@ public class PeerConnection {
 
   public boolean isDisconnect() {
     return channel.isDisconnect();
+  }
+
+  private void processDisconnect(Protocol.ReasonCode reason) {
+    InetAddress inetAddress = channel.getInetAddress();
+    if (inetAddress == null) {
+      return;
+    }
+    switch (reason) {
+      case BAD_PROTOCOL:
+      case BAD_BLOCK:
+      case BAD_TX:
+        channel.close(BAD_PEER_BAN_TIME);
+        break;
+      default:
+        channel.close();
+        break;
+    }
+    MetricsUtil.counterInc(MetricsKey.NET_DISCONNECTION_COUNT);
+    MetricsUtil.counterInc(MetricsKey.NET_DISCONNECTION_DETAIL + reason);
+    Metrics.counterInc(MetricKeys.Counter.P2P_DISCONNECT, 1,
+            reason.name().toLowerCase(Locale.ROOT));
+  }
+
+  private boolean needToLog(Message msg) {
+    if (msg instanceof PingMessage
+            || msg instanceof PongMessage
+            || msg instanceof TransactionsMessage
+            || msg instanceof PbftBaseMessage) {
+      return false;
+    }
+
+    if (msg instanceof InventoryMessage
+            && ((InventoryMessage) msg).getInventoryType().equals(Protocol.Inventory.InventoryType.TRX)) {
+      return false;
+    }
+
+    return true;
   }
 
   @Override

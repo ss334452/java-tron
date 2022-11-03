@@ -4,6 +4,9 @@ import com.google.common.collect.Lists;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.ApplicationContext;
+import org.tron.common.prometheus.MetricKeys;
+import org.tron.common.prometheus.MetricLabels;
+import org.tron.common.prometheus.Metrics;
 import org.tron.p2p.connection.Channel;
 
 import java.util.ArrayList;
@@ -32,10 +35,11 @@ public class PeerManager {
     executor.scheduleWithFixedDelay(() -> {
       try {
         check();
+        logPeerStats();
       } catch (Throwable t) {
         logger.error("Exception in peer manager", t);
       }
-    }, 100, 3600, TimeUnit.MILLISECONDS);
+    }, 30, 10, TimeUnit.SECONDS);
   }
 
   public static void close() {
@@ -123,6 +127,29 @@ public class PeerManager {
         peer.onDisconnect();
       }
     }
+  }
+
+  private static synchronized void logPeerStats() {
+    String str = String.format("\n\n============ Peer stats: all %d, active %d, passive %d\n\n",
+            peers.size(), activePeersCount.get(), passivePeersCount.get());
+    metric(peers.size(), MetricLabels.Gauge.PEERS_ALL);
+    metric(activePeersCount.get(), MetricLabels.Gauge.PEERS_ACTIVE);
+    metric(passivePeersCount.get(), MetricLabels.Gauge.PEERS_PASSIVE);
+    StringBuilder sb = new StringBuilder(str);
+    int valid = 0;
+    for (PeerConnection peer : new ArrayList<>(peers)) {
+      sb.append(peer.log());
+      sb.append("\n");
+      if (!(peer.isNeedSyncFromUs() || peer.isNeedSyncFromPeer())) {
+        valid++;
+      }
+    }
+    metric(valid, MetricLabels.Gauge.PEERS_VALID);
+    logger.info(sb.toString());
+  }
+
+  private static void metric(double amt, String peerType) {
+    Metrics.gaugeSet(MetricKeys.Gauge.PEERS, amt, peerType);
   }
 
 }

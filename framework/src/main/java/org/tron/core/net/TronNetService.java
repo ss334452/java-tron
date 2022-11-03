@@ -20,7 +20,6 @@ import org.tron.core.net.service.statistics.TronStatsManager;
 import org.tron.core.net.service.sync.SyncService;
 import org.tron.p2p.P2pConfig;
 import org.tron.p2p.P2pService;
-import org.tron.p2p.stats.StatsManager;
 
 import java.net.InetSocketAddress;
 import java.util.ArrayList;
@@ -112,15 +111,6 @@ public class TronNetService {
     return advService.fastBroadcastTransaction(msg);
   }
 
-  private List<InetSocketAddress> getInetSocketAddresses(List<String> list) {
-    List<InetSocketAddress> addresses = new ArrayList<>();
-    for (String s: list) {
-      String sz[] = s.split(":");
-      addresses.add(new InetSocketAddress(sz[0], Integer.getInteger(sz[1])));
-    }
-    return addresses;
-  }
-
   private P2pConfig getConfig() {
     List<InetSocketAddress> seeds = new ArrayList<>();
     seeds.addAll(nodePersistService.dbRead());
@@ -138,8 +128,8 @@ public class TronNetService {
     config.setMaxConnectionsWithSameIp(parameter.getMaxConnectionsWithSameIp());
     config.setPort(parameter.getNodeListenPort());
     config.setVersion(parameter.getNodeP2pVersion());
-    config.setDisconnectionPolicyEnable(false);
-    config.setDiscoverEnable(true);
+    config.setDisconnectionPolicyEnable(parameter.isOpenFullTcpDisconnect());
+    config.setDiscoverEnable(parameter.isNodeDiscoveryEnable());
     return config;
   }
 }

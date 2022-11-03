@@ -83,9 +83,11 @@ public class P2pEventHandlerImpl extends P2pEventHandler {
   @Autowired
   private KeepAliveService keepAliveService;
 
+  private byte MESSAGE_MAX_TYPE = 127;
+
   public P2pEventHandlerImpl() {
     Set<Byte> set = new HashSet<>();
-    for (byte i = 0; i< 127; i++) {
+    for (byte i = 0; i< MESSAGE_MAX_TYPE; i++) {
       set.add(i);
     }
     messageTypes = set;
@@ -98,8 +100,6 @@ public class P2pEventHandlerImpl extends P2pEventHandler {
       handshakeService.startHandshake(peerConnection);
     }
   }
-
-
 
   @Override
   public synchronized void onDisconnect(Channel channel) {
