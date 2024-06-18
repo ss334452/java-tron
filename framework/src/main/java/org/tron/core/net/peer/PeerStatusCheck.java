@@ -415,12 +415,12 @@ public class PeerStatusCheck {
 
       logger.info("### num: " +  (start - tmp)  + "," + txCnt + ","  + txTimeout6Cnt
         + ","  + txTimeout3Cnt
-        + ","  + txCnt);
+        + ","  + txTimeoutCnt);
 
       if ((start - tmp) % 28800 == 0) {
         logger.info("### day: " +  ++day  + "," + txCnt + ","  + txTimeout6Cnt
           + ","  + txTimeout3Cnt
-          + ","  + txCnt);
+          + ","  + txTimeoutCnt);
       }
     }
 
