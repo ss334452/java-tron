@@ -374,7 +374,7 @@ public class PeerStatusCheck {
 
     WalletGrpc.WalletBlockingStub blockingStubFull = WalletGrpc.newBlockingStub(channelFull);
 
-    long start = 5375797;
+    long start = 5375800;
 
     long gap = 28800;
 
@@ -383,6 +383,10 @@ public class PeerStatusCheck {
     int txCnt = 0;
 
     int txTimeoutCnt = 0;
+
+    int txTimeout3Cnt = 0;
+
+    int txTimeout6Cnt = 0;
 
     int day = 0;
 
@@ -393,16 +397,30 @@ public class PeerStatusCheck {
       for (Protocol.Transaction t : block.getTransactionsList()) {
         if (t.getRawData().getExpiration() < time) {
           txTimeoutCnt++;
+          logger.info("###time: " + t.getRawData().getExpiration() + ","
+            + time + ", " + (t.getRawData().getExpiration() < time));
         }
+        if (t.getRawData().getExpiration() < time + 3) {
+          logger.info("###time3: " + t.getRawData().getExpiration() + ","
+            + time + ", " + (t.getRawData().getExpiration() < time));
+          txTimeout3Cnt++;
+        }
+
+        if (t.getRawData().getExpiration() < time + 6) {
+          txTimeout6Cnt++;
+        }
+
         txCnt++;
       }
 
-      logger.info("### num: " +  (start - tmp)  + "," + txCnt + ","  + txTimeoutCnt);
-      System.out.println("### num: " +  (start - tmp)  + "," + txCnt + ","  + txTimeoutCnt);
+      logger.info("### num: " +  (start - tmp)  + "," + txCnt + ","  + txTimeout6Cnt
+        + ","  + txTimeout3Cnt
+        + ","  + txCnt);
 
       if ((start - tmp) % 28800 == 0) {
-        logger.info("### day: " +  ++day  + "," + txCnt + ","  + txTimeoutCnt);
-        System.out.println(++day  + "," + txCnt + ","  + txTimeoutCnt);
+        logger.info("### day: " +  ++day  + "," + txCnt + ","  + txTimeout6Cnt
+          + ","  + txTimeout3Cnt
+          + ","  + txCnt);
       }
     }
 
