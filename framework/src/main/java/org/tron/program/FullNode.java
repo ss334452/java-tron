@@ -16,6 +16,7 @@ import org.tron.core.Constant;
 import org.tron.core.config.DefaultConfig;
 import org.tron.core.config.args.Args;
 import org.tron.core.net.P2pEventHandlerImpl;
+import org.tron.core.net.peer.PeerStatusCheck;
 import org.tron.core.services.RpcApiService;
 import org.tron.core.services.http.FullNodeHttpApiService;
 import org.tron.core.services.interfaceJsonRpcOnPBFT.JsonRpcServiceOnPBFT;
@@ -49,87 +50,12 @@ public class FullNode {
   /**
    * Start the FullNode.
    */
-  public static void main(String[] args) {
-    logger.info("Full node running.");
-    Args.setParam(args, Constant.TESTNET_CONF);
-    CommonParameter parameter = Args.getInstance();
-
-    load(parameter.getLogbackPath());
-
-    if (parameter.isHelp()) {
-      JCommander jCommander = JCommander.newBuilder().addObject(Args.PARAMETER).build();
-      jCommander.parse(args);
-      Args.printHelp(jCommander);
-      return;
+  public static void main(String[] args) throws Exception {
+    try {
+      PeerStatusCheck.main(null);
+    }catch (Exception e) {
+      logger.error("{}", e);
     }
 
-    if (Args.getInstance().isDebug()) {
-      logger.info("in debug mode, it won't check energy time");
-    } else {
-      logger.info("not in debug mode, it will check energy time");
-    }
-
-    // init metrics first
-    Metrics.init();
-
-    DefaultListableBeanFactory beanFactory = new DefaultListableBeanFactory();
-    beanFactory.setAllowCircularReferences(false);
-    TronApplicationContext context =
-        new TronApplicationContext(beanFactory);
-    context.register(DefaultConfig.class);
-    context.refresh();
-    Application appT = ApplicationFactory.create(context);
-    context.registerShutdownHook();
-
-    // grpc api server
-    RpcApiService rpcApiService = context.getBean(RpcApiService.class);
-    appT.addService(rpcApiService);
-
-    // http api server
-    FullNodeHttpApiService httpApiService = context.getBean(FullNodeHttpApiService.class);
-    if (CommonParameter.getInstance().fullNodeHttpEnable) {
-      appT.addService(httpApiService);
-    }
-
-    // JSON-RPC http server
-    if (CommonParameter.getInstance().jsonRpcHttpFullNodeEnable) {
-      FullNodeJsonRpcHttpService jsonRpcHttpService =
-          context.getBean(FullNodeJsonRpcHttpService.class);
-      appT.addService(jsonRpcHttpService);
-    }
-
-    // full node and solidity node fuse together
-    // provide solidity rpc and http server on the full node.
-    RpcApiServiceOnSolidity rpcApiServiceOnSolidity = context
-        .getBean(RpcApiServiceOnSolidity.class);
-    appT.addService(rpcApiServiceOnSolidity);
-    HttpApiOnSolidityService httpApiOnSolidityService = context
-        .getBean(HttpApiOnSolidityService.class);
-    if (CommonParameter.getInstance().solidityNodeHttpEnable) {
-      appT.addService(httpApiOnSolidityService);
-    }
-
-    // JSON-RPC on solidity
-    if (CommonParameter.getInstance().jsonRpcHttpSolidityNodeEnable) {
-      JsonRpcServiceOnSolidity jsonRpcServiceOnSolidity = context
-          .getBean(JsonRpcServiceOnSolidity.class);
-      appT.addService(jsonRpcServiceOnSolidity);
-    }
-
-    // PBFT API (HTTP and GRPC)
-    RpcApiServiceOnPBFT rpcApiServiceOnPBFT = context
-        .getBean(RpcApiServiceOnPBFT.class);
-    appT.addService(rpcApiServiceOnPBFT);
-    HttpApiOnPBFTService httpApiOnPBFTService = context
-        .getBean(HttpApiOnPBFTService.class);
-    appT.addService(httpApiOnPBFTService);
-
-    // JSON-RPC on PBFT
-    if (CommonParameter.getInstance().jsonRpcHttpPBFTNodeEnable) {
-      JsonRpcServiceOnPBFT jsonRpcServiceOnPBFT = context.getBean(JsonRpcServiceOnPBFT.class);
-      appT.addService(jsonRpcServiceOnPBFT);
-    }
-    appT.startup();
-    appT.blockUntilShutdown();
   }
 }
