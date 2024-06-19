@@ -388,7 +388,7 @@ public class ChainBaseManager {
   }
 
   public boolean isLiteNode() {
-    return getNodeType() == NodeType.LITE;
+    return false;
   }
 
   public enum  NodeType  {
