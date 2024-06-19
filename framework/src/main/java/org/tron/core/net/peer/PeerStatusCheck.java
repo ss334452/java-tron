@@ -374,7 +374,7 @@ public class PeerStatusCheck {
 
     WalletGrpc.WalletBlockingStub blockingStubFull = WalletGrpc.newBlockingStub(channelFull);
 
-    long start = 5375800;
+    long start = 62646961;
 
     long gap = 28800;
 
