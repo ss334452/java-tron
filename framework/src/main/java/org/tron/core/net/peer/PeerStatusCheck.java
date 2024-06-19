@@ -391,7 +391,7 @@ public class PeerStatusCheck {
     int day = 0;
 
     while (tmp-- >= start - 90 * gap - 1) {
-      GrpcAPI.NumberMessage message = GrpcAPI.NumberMessage.newBuilder().setNum(start).build();
+      GrpcAPI.NumberMessage message = GrpcAPI.NumberMessage.newBuilder().setNum(tmp).build();
       Protocol.Block block = blockingStubFull.getBlockByNum(message);
       long time = block.getBlockHeader().getRawData().getTimestamp();
       for (Protocol.Transaction t : block.getTransactionsList()) {
