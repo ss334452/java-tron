@@ -369,12 +369,12 @@ public class PeerStatusCheck {
   public static void main(String[] args) throws  Exception {
 //    ManagedChannel channelFull = ManagedChannelBuilder.forTarget("18.163.230.203:50051")
 //      .usePlaintext().build();
-    ManagedChannel channelFull = ManagedChannelBuilder.forTarget("127.0.0.1:50060")
+    ManagedChannel channelFull = ManagedChannelBuilder.forTarget("127.0.0.1:50051")
       .usePlaintext().build();
 
     WalletGrpc.WalletBlockingStub blockingStubFull = WalletGrpc.newBlockingStub(channelFull);
 
-    long start = 62646961;
+    long start = 62738346;
 
     long gap = 28800;
 
@@ -398,11 +398,11 @@ public class PeerStatusCheck {
         if (t.getRawData().getExpiration() < time) {
           txTimeoutCnt++;
           logger.info("###time: " + t.getRawData().getExpiration() + ","
-            + time + ", " + (t.getRawData().getExpiration() < time));
+            + time + ", " + (t.getRawData().getExpiration() - time));
         }
         if (t.getRawData().getExpiration() < time + 3) {
           logger.info("###time3: " + t.getRawData().getExpiration() + ","
-            + time + ", " + (t.getRawData().getExpiration() < time));
+            + time + ", " + (t.getRawData().getExpiration() - time));
           txTimeout3Cnt++;
         }
 
@@ -413,9 +413,11 @@ public class PeerStatusCheck {
         txCnt++;
       }
 
-      logger.info("### num: " +  (start - tmp)  + "," + txCnt + ","  + txTimeout6Cnt
-        + ","  + txTimeout3Cnt
-        + ","  + txTimeoutCnt);
+      if ( (start - tmp) % 100 == 0) {
+        logger.info("### num: " +  (start - tmp)  + "," + txCnt + ","  + txTimeout6Cnt
+          + ","  + txTimeout3Cnt
+          + ","  + txTimeoutCnt);
+      }
 
       if ((start - tmp) % 28800 == 0) {
         logger.info("### day: " +  ++day  + "," + txCnt + ","  + txTimeout6Cnt
