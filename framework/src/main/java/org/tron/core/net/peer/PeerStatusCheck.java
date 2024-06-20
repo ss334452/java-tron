@@ -4,9 +4,13 @@ import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.net.URL;
 import java.net.URLConnection;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
 import com.google.protobuf.ByteString;
 import io.grpc.ManagedChannel;
@@ -14,20 +18,26 @@ import io.grpc.ManagedChannelBuilder;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.codec.binary.Hex;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.tron.api.GrpcAPI;
 import org.tron.api.WalletGrpc;
 import org.tron.common.client.WalletGrpcClient;
+import org.tron.common.crypto.Hash;
 import org.tron.common.es.ExecutorServiceManager;
 import org.tron.common.utils.ByteArray;
 import org.tron.common.utils.JsonUtil;
 import org.tron.core.Wallet;
+import org.tron.core.capsule.ContractCapsule;
+import org.tron.core.capsule.TransactionCapsule;
 import org.tron.core.config.Parameter.NetConstants;
 import org.tron.core.config.args.Args;
+import org.tron.core.exception.ContractValidateException;
 import org.tron.core.net.TronNetDelegate;
 import org.tron.protos.Protocol;
 import org.tron.protos.Protocol.ReasonCode;
+import org.tron.protos.contract.SmartContractOuterClass;
 
 @Slf4j(topic = "net")
 @Component
@@ -366,6 +376,46 @@ public class PeerStatusCheck {
       System.out.println("getUnknownFields: " + a1.getUnknownFields() + ", " + other.getUnknownFields());
   }
 
+
+
+  public static Map<Integer, Integer> trxMap = new HashMap<>();
+  public static Map<String, Integer> addressMap = new HashMap<>();
+  public static Map<String, Integer> triggerContractMap = new HashMap<>();
+
+  public static void stats(Protocol.Transaction t) {
+    byte[] bytes = TransactionCapsule.getOwner(t.getRawData().getContract(0));
+    String address = Hex.encodeHexString(bytes);
+    Integer v1 = addressMap.get(address);
+    if (v1 == null) {
+      addressMap.put(address, 1);
+    }else {
+      addressMap.put(address, 1 + v1);
+    }
+
+    int type = t.getRawData().getContract(0).getType().getNumber();
+    Integer v2 = trxMap.get(type);
+    if (v2 == null) {
+      trxMap.put(type, 1);
+    }else {
+      trxMap.put(type, 1 + v2);
+    }
+
+    if (type == Protocol.Transaction.Contract.ContractType.TriggerSmartContract_VALUE) {
+      SmartContractOuterClass.TriggerSmartContract contract = ContractCapsule.getTriggerContractFromTransaction(t);
+      if (contract == null) {
+        return;
+      }
+      byte[] contractAddress = contract.getContractAddress().toByteArray();
+      String key = Hex.encodeHexString(contractAddress);
+      Integer v3 = triggerContractMap.get(type);
+      if (v3 == null) {
+        triggerContractMap.put(key, 1);
+      }else {
+        triggerContractMap.put(key, 1 + v3);
+      }
+    }
+  }
+
   public static void main(String[] args) throws  Exception {
 //    ManagedChannel channelFull = ManagedChannelBuilder.forTarget("18.163.230.203:50051")
 //      .usePlaintext().build();
@@ -374,7 +424,7 @@ public class PeerStatusCheck {
 
     WalletGrpc.WalletBlockingStub blockingStubFull = WalletGrpc.newBlockingStub(channelFull);
 
-    long start = 62738346;
+    long start = 62737246;
 
     long gap = 28800;
 
@@ -390,12 +440,14 @@ public class PeerStatusCheck {
 
     int day = 0;
 
-    while (tmp-- >= start - 90 * gap - 1) {
+    while (tmp-- >= start - 365 * gap - 1) {
+//    while (tmp-- >= start - 300) {
       GrpcAPI.NumberMessage message = GrpcAPI.NumberMessage.newBuilder().setNum(tmp).build();
       Protocol.Block block = blockingStubFull.getBlockByNum(message);
       long time = block.getBlockHeader().getRawData().getTimestamp();
       for (Protocol.Transaction t : block.getTransactionsList()) {
         if (t.getRawData().getExpiration() < time) {
+          stats(t);
           txTimeoutCnt++;
           logger.info("###time: " + t.getRawData().getExpiration() + ","
             + time + ", " + (t.getRawData().getExpiration() - time));
@@ -426,5 +478,8 @@ public class PeerStatusCheck {
       }
     }
 
+    trxMap.forEach((k, v) -> logger.info("trxMap: {}, {}", k, v));
+    addressMap.forEach((k, v) -> logger.info("addressMap: {}, {}", k, v));
+    triggerContractMap.forEach((k, v) -> logger.info("triggerContractMap: {}, {}", k, v));
   }
 }
