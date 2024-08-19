@@ -424,7 +424,7 @@ public class PeerStatusCheck {
 
     WalletGrpc.WalletBlockingStub blockingStubFull = WalletGrpc.newBlockingStub(channelFull);
 
-    long start = 62737246;
+    long start = 64473659;
 
     long gap = 28800;
 
@@ -440,10 +440,14 @@ public class PeerStatusCheck {
 
     int day = 0;
 
-    while (tmp-- >= start - 365 * gap - 1) {
+    while (tmp-- >= start - 32 * gap - 1) {
 //    while (tmp-- >= start - 300) {
       GrpcAPI.NumberMessage message = GrpcAPI.NumberMessage.newBuilder().setNum(tmp).build();
       Protocol.Block block = blockingStubFull.getBlockByNum(message);
+      if (block == null) {
+        logger.warn("block is null, end");
+        continue;
+      }
       long time = block.getBlockHeader().getRawData().getTimestamp();
       for (Protocol.Transaction t : block.getTransactionsList()) {
         if (t.getRawData().getExpiration() < time) {
@@ -452,13 +456,13 @@ public class PeerStatusCheck {
           logger.info("###time: " + t.getRawData().getExpiration() + ","
             + time + ", " + (t.getRawData().getExpiration() - time));
         }
-        if (t.getRawData().getExpiration() < time + 3) {
+        if (t.getRawData().getExpiration() == time) {
           logger.info("###time3: " + t.getRawData().getExpiration() + ","
             + time + ", " + (t.getRawData().getExpiration() - time));
           txTimeout3Cnt++;
         }
 
-        if (t.getRawData().getExpiration() < time + 6) {
+        if (t.getRawData().getExpiration() < time + 3) {
           txTimeout6Cnt++;
         }
 
