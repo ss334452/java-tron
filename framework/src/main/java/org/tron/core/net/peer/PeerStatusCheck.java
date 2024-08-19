@@ -419,12 +419,12 @@ public class PeerStatusCheck {
   public static void main(String[] args) throws  Exception {
 //    ManagedChannel channelFull = ManagedChannelBuilder.forTarget("18.163.230.203:50051")
 //      .usePlaintext().build();
-    ManagedChannel channelFull = ManagedChannelBuilder.forTarget("127.0.0.1:50060")
+    ManagedChannel channelFull = ManagedChannelBuilder.forTarget("127.0.0.1:50051")
       .usePlaintext().build();
 
     WalletGrpc.WalletBlockingStub blockingStubFull = WalletGrpc.newBlockingStub(channelFull);
 
-    long start = 64473659;
+    long start = 62156819;
 
     long gap = 28800;
 
