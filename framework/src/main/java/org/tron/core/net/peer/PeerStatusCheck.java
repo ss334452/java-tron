@@ -407,7 +407,7 @@ public class PeerStatusCheck {
       }
       byte[] contractAddress = contract.getContractAddress().toByteArray();
       String key = Hex.encodeHexString(contractAddress);
-      Integer v3 = triggerContractMap.get(type);
+      Integer v3 = triggerContractMap.get(key);
       if (v3 == null) {
         triggerContractMap.put(key, 1);
       }else {
