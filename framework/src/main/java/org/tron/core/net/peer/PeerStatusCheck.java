@@ -440,7 +440,7 @@ public class PeerStatusCheck {
 
     int day = 0;
 
-    while (tmp-- >= start - 32 * gap - 1) {
+    while (tmp-- >= start - 30 * gap - 1) {
 //    while (tmp-- >= start - 300) {
       GrpcAPI.NumberMessage message = GrpcAPI.NumberMessage.newBuilder().setNum(tmp).build();
       Protocol.Block block = blockingStubFull.getBlockByNum(message);
