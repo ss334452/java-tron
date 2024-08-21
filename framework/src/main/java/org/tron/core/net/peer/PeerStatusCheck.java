@@ -434,13 +434,15 @@ public class PeerStatusCheck {
 
     int txTimeoutCnt = 0;
 
+    int txTimeoutEqBlockCnt = 0;
+
     int txTimeout3Cnt = 0;
 
-    int txTimeout6Cnt = 0;
+    int txTimeoutEqBlock3Cnt = 0;
 
     int day = 0;
 
-    while (tmp-- >= start - 30 * gap - 1) {
+    while (tmp-- >= start - 180 * gap - 1) {
 //    while (tmp-- >= start - 300) {
       GrpcAPI.NumberMessage message = GrpcAPI.NumberMessage.newBuilder().setNum(tmp).build();
       Protocol.Block block = blockingStubFull.getBlockByNum(message);
@@ -456,29 +458,34 @@ public class PeerStatusCheck {
           logger.info("###time: " + t.getRawData().getExpiration() + ","
             + time + ", " + (t.getRawData().getExpiration() - time));
         }
+
         if (t.getRawData().getExpiration() == time) {
-          logger.info("###time3: " + t.getRawData().getExpiration() + ","
-            + time + ", " + (t.getRawData().getExpiration() - time));
+          txTimeoutEqBlockCnt++;
+        }
+
+        if (t.getRawData().getExpiration() < time + 3000) {
           txTimeout3Cnt++;
         }
 
-        if (t.getRawData().getExpiration() < time + 3) {
-          txTimeout6Cnt++;
+        if (t.getRawData().getExpiration() == time + 3000) {
+          txTimeoutEqBlock3Cnt++;
         }
 
         txCnt++;
       }
 
       if ( (start - tmp) % 100 == 0) {
-        logger.info("### num: " +  (start - tmp)  + "," + txCnt + ","  + txTimeout6Cnt
+        logger.info("### num: " +  (start - tmp)  + "," + txCnt + ","  + txTimeoutCnt
           + ","  + txTimeout3Cnt
-          + ","  + txTimeoutCnt);
+          + ","  + txTimeoutEqBlockCnt
+          + ","  + txTimeoutEqBlock3Cnt);
       }
 
       if ((start - tmp) % 28800 == 0) {
-        logger.info("### day: " +  ++day  + "," + txCnt + ","  + txTimeout6Cnt
+        logger.info("### day: " +  ++day  + "," + txCnt + ","  + txTimeoutCnt
           + ","  + txTimeout3Cnt
-          + ","  + txTimeoutCnt);
+          + ","  + txTimeoutEqBlockCnt
+          + ","  + txTimeoutEqBlock3Cnt);
       }
     }
 
