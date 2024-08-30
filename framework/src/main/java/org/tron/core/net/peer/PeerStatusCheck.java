@@ -454,7 +454,7 @@ public class PeerStatusCheck {
 
     int day = 0;
 
-    while (tmp-- >= start - 180 * gap - 1) {
+    while (tmp-- >= start - 30 * gap - 1) {
 //    while (tmp-- >= start - 300) {
       GrpcAPI.NumberMessage message = GrpcAPI.NumberMessage.newBuilder().setNum(tmp).build();
       Protocol.Block block = blockingStubFull.getBlockByNum(message);
@@ -498,10 +498,10 @@ public class PeerStatusCheck {
           + ","  + txTimeout3Cnt
           + ","  + txTimeoutEqBlockCnt
           + ","  + txTimeoutEqBlock3Cnt);
-
-        trxMapT.forEach((k, v) -> logger.info("typeMapT: {}, {}", k, v));
-        addressMapT.forEach((k, v) -> logger.info("addressMapT: {}, {}", k, v));
-        triggerContractMapT.forEach((k, v) -> logger.info("triggerContractMapT: {}, {}", k, v));
+        final long tt = tmp;
+        trxMapT.forEach((k, v) -> logger.info("{} typeMapT: {}, {}",tt, k, v));
+        addressMapT.forEach((k, v) -> logger.info("{} addressMapT: {}, {}",tt, k, v));
+        triggerContractMapT.forEach((k, v) -> logger.info("{} triggerContractMapT: {}, {}",tt, k, v));
         logger.info("typeMap: {}, addressMap: {}, triggerContractMap: {}",
           trxMap.size(), addressMap.size(), triggerContractMap.size());
         trxMapT.clear();
