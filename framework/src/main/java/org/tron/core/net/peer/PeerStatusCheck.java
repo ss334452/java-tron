@@ -382,22 +382,32 @@ public class PeerStatusCheck {
   public static Map<String, Integer> addressMap = new HashMap<>();
   public static Map<String, Integer> triggerContractMap = new HashMap<>();
 
+
+  public static Map<Integer, Integer> trxMapT = new HashMap<>();
+  public static Map<String, Integer> addressMapT = new HashMap<>();
+  public static Map<String, Integer> triggerContractMapT = new HashMap<>();
+
+
   public static void stats(Protocol.Transaction t) {
     byte[] bytes = TransactionCapsule.getOwner(t.getRawData().getContract(0));
     String address = Hex.encodeHexString(bytes);
     Integer v1 = addressMap.get(address);
     if (v1 == null) {
       addressMap.put(address, 1);
+      addressMapT.put(address, 1);
     }else {
       addressMap.put(address, 1 + v1);
+      addressMapT.put(address, 1 + v1);
     }
 
     int type = t.getRawData().getContract(0).getType().getNumber();
     Integer v2 = trxMap.get(type);
     if (v2 == null) {
       trxMap.put(type, 1);
+      trxMapT.put(type, 1);
     }else {
       trxMap.put(type, 1 + v2);
+      trxMapT.put(type, 1 + v2);
     }
 
     if (type == Protocol.Transaction.Contract.ContractType.TriggerSmartContract_VALUE) {
@@ -410,8 +420,10 @@ public class PeerStatusCheck {
       Integer v3 = triggerContractMap.get(key);
       if (v3 == null) {
         triggerContractMap.put(key, 1);
+        triggerContractMapT.put(key, 1);
       }else {
         triggerContractMap.put(key, 1 + v3);
+        triggerContractMapT.put(key, 1 + v3);
       }
     }
   }
@@ -424,7 +436,7 @@ public class PeerStatusCheck {
 
     WalletGrpc.WalletBlockingStub blockingStubFull = WalletGrpc.newBlockingStub(channelFull);
 
-    long start = 62156819;
+    long start = 64776704;
 
     long gap = 28800;
 
@@ -486,10 +498,19 @@ public class PeerStatusCheck {
           + ","  + txTimeout3Cnt
           + ","  + txTimeoutEqBlockCnt
           + ","  + txTimeoutEqBlock3Cnt);
+
+        trxMapT.forEach((k, v) -> logger.info("typeMapT: {}, {}", k, v));
+        addressMapT.forEach((k, v) -> logger.info("addressMapT: {}, {}", k, v));
+        triggerContractMapT.forEach((k, v) -> logger.info("triggerContractMapT: {}, {}", k, v));
+        logger.info("typeMap: {}, addressMap: {}, triggerContractMap: {}",
+          trxMap.size(), addressMap.size(), triggerContractMap.size());
+        trxMapT.clear();
+        addressMapT.clear();
+        triggerContractMapT.clear();
       }
     }
 
-    trxMap.forEach((k, v) -> logger.info("trxMap: {}, {}", k, v));
+    trxMap.forEach((k, v) -> logger.info("typeMap: {}, {}", k, v));
     addressMap.forEach((k, v) -> logger.info("addressMap: {}, {}", k, v));
     triggerContractMap.forEach((k, v) -> logger.info("triggerContractMap: {}, {}", k, v));
   }
