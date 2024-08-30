@@ -498,7 +498,7 @@ public class PeerStatusCheck {
           + ","  + txTimeout3Cnt
           + ","  + txTimeoutEqBlockCnt
           + ","  + txTimeoutEqBlock3Cnt);
-        final long tt = tmp;
+        final long tt = (start - tmp) / 28800;
         trxMapT.forEach((k, v) -> logger.info("{} typeMapT: {}, {}",tt, k, v));
         addressMapT.forEach((k, v) -> logger.info("{} addressMapT: {}, {}",tt, k, v));
         triggerContractMapT.forEach((k, v) -> logger.info("{} triggerContractMapT: {}, {}",tt, k, v));
