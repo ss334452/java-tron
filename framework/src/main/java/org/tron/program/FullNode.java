@@ -64,7 +64,8 @@ public class FullNode {
       AccountCp.cp(ipPorts2, address );
 
     }catch (Exception e) {
-      logger.error("{}", e);
+      System.out.println(e);
+      e.printStackTrace();
     }
 
   }
