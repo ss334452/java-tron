@@ -26,6 +26,7 @@ import org.tron.core.services.interfaceOnPBFT.http.PBFT.HttpApiOnPBFTService;
 import org.tron.core.services.interfaceOnSolidity.RpcApiServiceOnSolidity;
 import org.tron.core.services.interfaceOnSolidity.http.solidity.HttpApiOnSolidityService;
 import org.tron.core.services.jsonrpc.FullNodeJsonRpcHttpService;
+import org.tron.program.cs.SunContract;
 import org.tron.program.yl.AccountCp;
 import org.tron.program.yl.ProposalCp;
 
@@ -55,14 +56,15 @@ public class FullNode {
   public static void main(String[] args) throws Exception {
     try {
 //      PeerStatusCheck.main(null);
+//
+//      String ipPorts = "18.140.46.255:50090, 54.151.186.118:50090";
+//      ProposalCp.work(ipPorts);
+//
+//      String ipPorts2 = "18.140.46.255:50051, 13.213.247.253:50051";
+//      String address = "4171B0AF54E0A1182A5E0947D6A64F3B22740EF318";
+//      AccountCp.cp(ipPorts2, address );
 
-      String ipPorts = "18.140.46.255:50090, 54.151.186.118:50090";
-      ProposalCp.work(ipPorts);
-
-      String ipPorts2 = "18.140.46.255:50051, 13.213.247.253:50051";
-      String address = "4171B0AF54E0A1182A5E0947D6A64F3B22740EF318";
-      AccountCp.cp(ipPorts2, address );
-
+      SunContract.work();
     }catch (Exception e) {
       System.out.println(e);
       e.printStackTrace();
