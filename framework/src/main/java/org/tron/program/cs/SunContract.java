@@ -110,11 +110,11 @@ public class SunContract {
           if (tmpNumber == 0) {
             tmpNumber = blockNum;
             tmpWit = wit;
-          } else if (tmpNumber + 1  ==  blockNum) {
-            success(wit);
+          } else if (tmpNumber + 2  >=  blockNum) {
+//            success(wit);
             tmpNumber = 0;
           } else {
-            failMap.put(tmpWit, 1);
+            fail(tmpWit);
             attackFail++;
             tmpNumber = blockNum;
             tmpWit = wit;
