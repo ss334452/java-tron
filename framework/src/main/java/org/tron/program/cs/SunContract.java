@@ -30,11 +30,11 @@ public class SunContract {
 
     WalletGrpc.WalletBlockingStub blockingStubFull = WalletGrpc.newBlockingStub(channelFull);
 
-    long start = 65043357;
-
     long gap = 28800;
 
-    long tmp = start;
+    long end = 65043357;
+
+    long begin = end - 30 * gap - 1;
 
     int txCnt = 0;
 
@@ -54,7 +54,9 @@ public class SunContract {
 
     String tmpWit = "";
 
-    while (tmp-- >= start - 30 * gap - 1) {
+    long tmp = begin;
+
+    while (tmp++ <= end) {
       GrpcAPI.NumberMessage message = GrpcAPI.NumberMessage.newBuilder().setNum(tmp).build();
       Protocol.Block block = blockingStubFull.getBlockByNum(message);
       if (block == null) {
@@ -120,7 +122,7 @@ public class SunContract {
         }
       }
 
-      if ((start - tmp) % 28800 == 0) {
+      if ((tmp - begin) % 28800 == 0) {
         logger.info("### day: " +  ++day
           + ", txCnt: " + txCnt
           + ", sunCnt:"  + sunCnt
