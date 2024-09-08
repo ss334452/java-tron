@@ -34,7 +34,7 @@ public class SunContract {
 
     long end = 65043357;
 
-    long begin = end - 30 * gap - 1;
+    long begin = end - 20 * gap - 1;
 
     int txCnt = 0;
 
